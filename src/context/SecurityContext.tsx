@@ -26,6 +26,7 @@ interface SecurityContextType {
   // Screen Lock State & Controls
   isScreenLocked: boolean;
   lockNow: () => void;
+  resetLock: () => void;  // forcefully clears lock without PIN (e.g. on logout)
   unlockScreen: (pin: string) => boolean;
   unlockWithBiometric: () => boolean;
 
@@ -188,6 +189,11 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     setIsScreenLocked(true);
   };
 
+  // Force-clears the lock without PIN verification (used on logout)
+  const resetLock = () => {
+    setIsScreenLocked(false);
+  };
+
   const unlockScreen = (pin: string): boolean => {
     if (verifyPin(pin)) {
       setIsScreenLocked(false);
@@ -204,13 +210,21 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     return false;
   };
 
-  // Idle Timer for Auto-Lock
+  // Idle Timer for Auto-Lock -- skip on public routes (landing / auth)
   useEffect(() => {
     if (!pinLockEnabled || autoLockMinutes <= 0) return;
 
     let timeoutId: NodeJS.Timeout;
 
+    const isPublicRoute = () => {
+      const p = window.location.pathname;
+      return p === '/' || p === '/landing' || p === '/home' ||
+             p === '/login' || p === '/auth' || p === '/signin' ||
+             p === '/signup' || p === '/register';
+    };
+
     const resetTimer = () => {
+      if (isPublicRoute()) return;
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         setIsScreenLocked(true);
@@ -264,6 +278,7 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
         setAutoLockMinutes,
         isScreenLocked,
         lockNow,
+        resetLock,
         unlockScreen,
         unlockWithBiometric,
         isPinModalOpen,

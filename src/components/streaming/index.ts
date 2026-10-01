@@ -6,3 +6,5 @@ export * from './CameraFleetView';
 export * from './CameraHealthDiagnosticsView';
 export * from './MatrixCameraCell';
 export * from './TacticalMatrixView';
+export * from './CctvTypes';
+export { CctvFootageStudio } from './CctvFootageStudio';

@@ -22,7 +22,8 @@ export type ViewMode =
   | 'radar-map'
   | 'sandbox'
   | 'settings' 
-  | 'users';
+  | 'users'
+  | 'cctv-footage';
 
 export type DefconLevel = 1 | 2 | 3 | 4 | 5;
 

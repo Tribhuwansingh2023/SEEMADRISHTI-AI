@@ -26,7 +26,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<UserProfile>;
   register: (payload: RegisterPayload) => Promise<UserProfile>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<UserProfile>;
-  logout: () => Promise<void>;
+  logout: (onLoggedOut?: () => void) => Promise<void>;
   enterDemoMode: (role?: string) => Promise<UserProfile>;
 }
 
@@ -165,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (onLoggedOut?: () => void) => {
     setIsLoading(true);
     try {
       await logoutOperator();
@@ -177,6 +177,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthToken(null);
       setCurrentPortal('auth');
       setIsLoading(false);
+      // Call the optional callback (e.g. to reset PIN lock and navigate)
+      onLoggedOut?.();
     }
   }, []);
 

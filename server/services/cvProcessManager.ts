@@ -46,7 +46,8 @@ export interface FrameProcessingResult {
   frame_height: number;
   detections: any[];
   tracks: any[];
-  counts: { total: number; persons: number; vehicles: number };
+  plates?: any[];
+  counts: { total: number; persons: number; vehicles: number; plates?: number; events?: number; alerts?: number };
   events: any[];
   risk: { score: number; level: string; reasons: any[] };
   telemetry: {
@@ -165,7 +166,16 @@ export async function ensureCvProcessor(): Promise<boolean> {
 export async function dispatchWebcamFrame(
   cameraId: string,
   frameBase64: string,
-  timestamp?: number
+  timestamp?: number,
+  sourceType: string = 'browser_webcam',
+  restrictedZone?: any[],
+  options?: {
+    conf_threshold?: number;
+    iou_threshold?: number;
+    imgsz?: number;
+    model_name?: string;
+    max_lost_frames?: number;
+  }
 ): Promise<FrameProcessingResult | null> {
   const healthy = await ensureCvProcessor();
   if (!healthy) {
@@ -174,7 +184,7 @@ export async function dispatchWebcamFrame(
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 12000);
 
     const res = await fetch(`${getPythonCvUrl()}/process_frame`, {
       method: 'POST',
@@ -183,7 +193,13 @@ export async function dispatchWebcamFrame(
         camera_id: cameraId,
         frame_base64: frameBase64,
         timestamp: timestamp || Date.now(),
-        source_type: 'browser_webcam',
+        source_type: sourceType,
+        restricted_zone: restrictedZone,
+        conf_threshold: options?.conf_threshold,
+        iou_threshold: options?.iou_threshold,
+        imgsz: options?.imgsz,
+        model_name: options?.model_name,
+        max_lost_frames: options?.max_lost_frames,
       }),
       signal: controller.signal,
     });
@@ -207,7 +223,7 @@ export async function dispatchWebcamFrame(
           frame_width: result.frame_width,
           frame_height: result.frame_height,
           timestamp: result.timestamp,
-          source_type: 'browser_webcam',
+          source_type: sourceType,
           processing_mode: 'live_cv',
         });
       }
@@ -221,22 +237,36 @@ export async function dispatchWebcamFrame(
           frame_width: result.frame_width,
           frame_height: result.frame_height,
           timestamp: result.timestamp,
-          source_type: 'browser_webcam',
+          source_type: sourceType,
           processing_mode: 'live_cv',
         });
       }
 
-      // 3. Unified frame state
+      // 3. Number Plates (ANPR)
+      if (result.plates && result.plates.length > 0) {
+        for (const pl of result.plates) {
+          if (pl.readable && pl.plate_number !== 'PLATE NOT READABLE') {
+            broadcastWebSocketMessage('anpr_plate' as any, {
+              camera_id: result.camera_id,
+              ...pl,
+              timestamp: result.timestamp,
+            });
+          }
+        }
+      }
+
+      // 4. Unified frame state
       broadcastWebSocketMessage('frame_state', {
         camera_id: result.camera_id,
         frame_id: result.frame_sequence,
         frame_sequence: result.frame_sequence,
-        source_type: 'browser_webcam',
+        source_type: sourceType,
         processing_mode: 'live_cv',
         processing_latency_ms: result.telemetry?.total_latency_ms || 25,
         measured_fps: result.telemetry?.measured_fps || 15,
         timestamp: result.timestamp,
         tracks: result.tracks,
+        plates: result.plates,
         counts: result.counts,
       });
 

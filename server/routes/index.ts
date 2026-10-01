@@ -19,3 +19,4 @@ export * from './chat';
 export * from './webcam';
 export * from './sensors';
 export * from './evidence';
+export * from './cctv';

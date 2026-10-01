@@ -36,6 +36,7 @@ evidenceRouter.get('/:filename', (req: Request, res: Response, next: NextFunctio
     // Resolve candidate evidence paths
     const allowedDirectories = [
       path.resolve(process.cwd(), 'evidence'),
+      path.resolve(process.cwd(), 'evidence/snapshots'),
       path.resolve(process.cwd(), 'data/evidence'),
       path.resolve(process.cwd(), 'cv_service/tests/fixtures'),
     ];
@@ -79,3 +80,14 @@ evidenceRouter.get('/:filename', (req: Request, res: Response, next: NextFunctio
     next(err);
   }
 });
+
+// GET /evidence/snapshots/:filename
+evidenceRouter.get('/snapshots/:filename', (req: Request, res: Response, next: NextFunction) => {
+  const filePath = path.resolve(process.cwd(), 'evidence/snapshots', path.basename(req.params.filename));
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'image/jpeg');
+    return res.sendFile(filePath);
+  }
+  return res.status(404).json({ success: false, error: 'Snapshot not found' });
+});
+

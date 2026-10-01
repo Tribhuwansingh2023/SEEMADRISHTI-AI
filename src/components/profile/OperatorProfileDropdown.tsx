@@ -64,16 +64,16 @@ export const OperatorProfileDropdown: React.FC<OperatorProfileDropdownProps> = (
     <div className="relative font-mono" ref={dropdownRef}>
       <div className="flex items-center">
 
-        {/* Profile Avatar Pill with Glowing Status Ring */}
+        {/* Profile Avatar Pill with Glowing Status Ring & Label */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`relative p-0.5 rounded-full transition-transform active:scale-95 cursor-pointer flex items-center gap-2 group ${
+          className={`relative p-1 px-2.5 rounded-full border border-slate-700/60 bg-[#081020]/90 hover:bg-[#0c1830] transition-all active:scale-95 cursor-pointer flex items-center gap-2.5 group ${
             isOpen ? 'ring-2 ring-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''
           }`}
         >
           <div className="relative">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-emerald-400 shadow-md bg-slate-800 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-600 shadow-md bg-slate-800 flex items-center justify-center">
               <img
                 src="/operator_avatar.jpg"
                 alt={user.name}
@@ -85,8 +85,17 @@ export const OperatorProfileDropdown: React.FC<OperatorProfileDropdownProps> = (
               <User size={18} className="text-slate-400" />
             </div>
             {/* Verified Green Tick Badge */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border border-black flex items-center justify-center shadow-xs">
-              <Check size={9} className="text-black stroke-[3.5]" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border border-black flex items-center justify-center shadow-xs">
+              <Check size={8} className="text-black stroke-[3.5]" />
+            </div>
+          </div>
+
+          <div className="text-left font-mono leading-tight hidden xs:block pr-1">
+            <div className="text-xs font-bold text-white tracking-wide">
+              {user.name || 'Admin'}
+            </div>
+            <div className="text-[10px] text-slate-400">
+              {user.role === 'Commander' ? 'Security Operator' : user.role || 'Security Operator'}
             </div>
           </div>
         </button>

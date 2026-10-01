@@ -14,6 +14,7 @@ import {
   Clock,
   ArrowLeft,
   Fingerprint,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Auth3DCanvas } from './Auth3DCanvas';
@@ -28,13 +29,13 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
   initialMode = 'login',
   onNavigateLanding,
 }) => {
-  const { login, register, setPortal } = useAuth();
+  const { login, register, enterDemoMode, setPortal } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
 
   // Form states - default pre-filled with admin credentials for seamless evaluation
   const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [password, setPassword] = useState('Admin@123');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('Surveillance Operator');
@@ -471,12 +472,12 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     </span>
                     <span className="text-[9px] text-cyan-400 font-mono">1-Click Auto Fill</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5 mb-3">
                     {[
-                      { role: 'Commander', user: 'admin', pass: 'admin', border: 'border-pink-500/40 text-pink-300 hover:bg-pink-500/15' },
-                      { role: 'Operator', user: 'operator', pass: 'operator', border: 'border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/15' },
-                      { role: 'Patrol', user: 'patrol', pass: 'patrol', border: 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/15' },
-                      { role: 'Analyst', user: 'analyst', pass: 'analyst', border: 'border-purple-500/40 text-purple-300 hover:bg-purple-500/15' },
+                      { role: 'Commander', user: 'admin', pass: 'Admin@123', border: 'border-pink-500/40 text-pink-300 hover:bg-pink-500/15' },
+                      { role: 'Operator', user: 'operator', pass: 'Operator@123', border: 'border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/15' },
+                      { role: 'Patrol', user: 'patrol', pass: 'Patrol@123', border: 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/15' },
+                      { role: 'Analyst', user: 'analyst', pass: 'Analyst@123', border: 'border-purple-500/40 text-purple-300 hover:bg-purple-500/15' },
                     ].map((p) => (
                       <button
                         key={p.user}
@@ -493,6 +494,27 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                       </button>
                     ))}
                   </div>
+
+                  {/* 1-Click Instant Command Center Access Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      setErrorMessage(null);
+                      try {
+                        await enterDemoMode('Commander');
+                        navigate('/dashboard', { replace: true });
+                      } catch (err: any) {
+                        setErrorMessage(err.message || 'Instant access failed');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/30 to-teal-500/30 hover:from-emerald-500/40 hover:to-teal-500/40 border border-emerald-400/60 text-emerald-300 text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98]"
+                  >
+                    <Zap size={14} className="text-emerald-400 animate-pulse" />
+                    <span>⚡ 1-CLICK INSTANT ACCESS (COMMANDER)</span>
+                  </button>
                 </div>
               )}
 

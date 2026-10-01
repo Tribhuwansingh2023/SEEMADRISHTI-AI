@@ -6,6 +6,7 @@ import {
   Sun,
   Moon,
   Zap,
+  Clock,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -42,6 +43,8 @@ export const Header: React.FC<HeaderProps> = ({
   const [dateString, setDateString] = useState('MON, SEP 16, 2026');
   const [timeString, setTimeString] = useState('10:45:22 AM');
   const [utcString, setUtcString] = useState('17:45:22 UTC');
+  const [shortDate, setShortDate] = useState('22 Apr 2025');
+  const [clock24, setClock24] = useState('14:32:18');
   const [wsState, setWsState] = useState<WebSocketServiceState>(
     webSocketService.getState()
   );
@@ -59,6 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
       const now = new Date();
       const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
       const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       const dayName = days[now.getDay()];
       const monthName = months[now.getMonth()];
@@ -80,6 +84,12 @@ export const Header: React.FC<HeaderProps> = ({
       setDateString(`${dayName}, ${monthName} ${dateNum}, ${year}`);
       setTimeString(`${hoursStr}:${minutesStr}:${secondsStr} ${ampm}`);
       setUtcString(`${utcHours}:${utcMins}:${utcSecs} Z`);
+
+      setShortDate(`${dateNum} ${shortMonths[now.getMonth()]} ${year}`);
+      const h24 = String(now.getHours()).padStart(2, '0');
+      const m24 = String(now.getMinutes()).padStart(2, '0');
+      const s24 = String(now.getSeconds()).padStart(2, '0');
+      setClock24(`${h24}:${m24}:${s24}`);
     };
 
     updateTime();
@@ -95,16 +105,21 @@ export const Header: React.FC<HeaderProps> = ({
       className={`h-16 border-b flex items-center justify-between px-3 sm:px-5 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md ${
         isDaylight
           ? 'bg-white/95 border-slate-300 shadow-sm text-slate-900'
-          : theme === 'midnight-cyber'
-          ? 'bg-[#030712]/95 border-indigo-500/30 text-indigo-100'
-          : theme === 'obsidian-stealth'
-          ? 'bg-[#000000]/95 border-slate-800 text-slate-100'
-          : theme === 'emerald-ops'
-          ? 'bg-[#021009]/95 border-emerald-500/30 text-emerald-100'
-          : 'bg-[#020409]/95 border-cyan-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.95)] text-slate-200'
+          : 'bg-[#040812]/95 border-slate-800/90 text-slate-200'
       }`}
+      style={
+        !isDaylight
+          ? {
+              backgroundImage:
+                "linear-gradient(to right, rgba(4, 8, 18, 0.96), rgba(4, 8, 18, 0.75), rgba(4, 8, 18, 0.96)), url('/assets/header_tactical_bg.png')",
+              backgroundPosition: 'center',
+              backgroundSize: 'cover',
+              backgroundRepeat: 'no-repeat',
+            }
+          : undefined
+      }
     >
-      {/* Left: Hamburger & App Title */}
+      {/* Left: Hamburger, Logo, Brand Title & Tagline */}
       <div className="flex items-center gap-3 sm:gap-4">
         <button
           id="btn-toggle-menu"
@@ -120,95 +135,69 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <SeemadrishtiLogo size={28} className="hidden xs:inline-flex" />
-          <div>
-            <div className="flex items-center gap-2">
-              <h2
-                id="dashboard-title-heading"
-                className={`text-xs sm:text-sm font-black tracking-[0.18em] uppercase font-mono ${
-                  isDaylight
-                    ? 'text-cyan-900'
-                    : 'text-cyan-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                }`}
-              >
-                SEEMADRISHTI DASHBOARD
-              </h2>
-            </div>
-            <p
-              className={`text-[9px] font-mono hidden sm:block tracking-wider uppercase ${
-                isDaylight ? 'text-slate-500' : 'text-slate-400'
-              }`}
+          <SeemadrishtiLogo size={32} className="hidden xs:inline-flex shrink-0" />
+          <div className="flex flex-col">
+            <h1
+              id="dashboard-title-heading"
+              className="text-base sm:text-lg font-black tracking-wider text-white uppercase font-mono leading-none"
             >
-              Camera Border Surveillance Matrix
+              SEEMADRISHTI
+            </h1>
+            <p className="text-[8px] font-mono tracking-widest text-emerald-400 font-bold uppercase mt-1">
+              DEFENSE | SURVEILLANCE | SECURITY
             </p>
+          </div>
+
+          <div className="hidden lg:flex flex-col pl-4 border-l border-slate-700/60 leading-tight">
+            <span className="text-[11px] font-semibold text-slate-300">
+              AI Powered Defense &amp; Security Surveillance System
+            </span>
+            <span className="text-[10px] text-teal-400 font-mono">
+              Smarter Eyes. Safer Tomorrow.
+            </span>
           </div>
         </div>
       </div>
 
-
-
-      {/* Right: Telemetry & Actions */}
+      {/* Right: System Status, Live Clock, Theme Toggle & Operator Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
-
-        {/* System Online Pill - Grounded in real WebSocket state & clickable for AI Subsystem Status */}
+        {/* System Online Pill */}
         <button
           id="system-status-pill"
           onClick={() => setIsAiStatusOpen(true)}
           title="Click to inspect real-time AI subsystem integrity & model status"
-          className={`flex items-center gap-2 px-2.5 sm:px-3 py-1 rounded-md border cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-            wsState.status === 'CONNECTED'
-              ? isDaylight
-                ? 'bg-emerald-50 border-emerald-300 shadow-xs'
-                : 'border-emerald-500/50 bg-emerald-950/40 shadow-[0_0_15px_rgba(0,255,102,0.2)]'
-              : wsState.status === 'CONNECTING' || wsState.status === 'RECONNECTING'
-              ? 'border-amber-500/50 bg-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-              : 'border-rose-500/60 bg-rose-950/60 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse'
-          }`}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/50 bg-[#072018]/90 text-emerald-400 font-mono font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.25)] cursor-pointer transition-all hover:scale-105 active:scale-95"
         >
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${
-              wsState.status === 'CONNECTED'
-                ? 'bg-emerald-500 animate-pulse shadow-[0_0_6px_#00ff66]'
-                : wsState.status === 'CONNECTING' || wsState.status === 'RECONNECTING'
-                ? 'bg-amber-400 animate-pulse shadow-[0_0_6px_#f59e0b]'
-                : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
-            }`}
-          ></div>
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider font-mono ${
-              wsState.status === 'CONNECTED'
-                ? isDaylight ? 'text-emerald-800' : 'text-emerald-400'
-                : wsState.status === 'CONNECTING' || wsState.status === 'RECONNECTING'
-                ? 'text-amber-300'
-                : 'text-rose-300'
-            }`}
-          >
-            {wsState.status === 'CONNECTED'
-              ? `● LIVE (${wsState.latencyMs > 0 ? `${wsState.latencyMs}ms` : '<20ms'})`
-              : wsState.status === 'CONNECTING' || wsState.status === 'RECONNECTING'
-              ? '⏳ RECONNECTING...'
-              : '⚠️ BACKEND OFFLINE'}
-          </span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
+          <span className="tracking-wider">SYSTEM ONLINE</span>
         </button>
 
-        {/* Multi-Agent Swarm Orchestrator & Work Distribution Help Button */}
+        {/* Digital Clock Pill matching reference screenshot */}
+        <div className="hidden sm:flex items-center gap-2.5 px-3 py-1 rounded-full border border-slate-700/60 bg-[#081020]/90 text-slate-300">
+          <Clock size={16} className="text-slate-400 shrink-0" />
+          <div className="text-left font-mono leading-tight">
+            <div className="text-[10px] text-slate-400 font-semibold">{shortDate}</div>
+            <div className="text-xs font-black text-white tracking-widest leading-none mt-0.5">{clock24}</div>
+          </div>
+        </div>
+
+        {/* Multi-Agent Swarm Orchestrator Button */}
         {onOpenSwarmHelp && (
           <button
             id="btn-open-swarm-help"
             onClick={onOpenSwarmHelp}
             title="Open Multi-Agent Work Distribution & Task Orchestration Help"
-            className={`p-1.5 sm:px-3 rounded-lg border flex items-center gap-1.5 font-mono text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+            className={`p-1.5 sm:px-2.5 rounded-lg border flex items-center gap-1.5 font-mono text-xs font-bold transition-all cursor-pointer active:scale-95 ${
               isDaylight
-                ? 'bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border-cyan-300 shadow-xs'
-                : 'bg-cyan-950/60 hover:bg-cyan-900/80 border-cyan-500/40 hover:border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.2)]'
+                ? 'bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border-cyan-300'
+                : 'bg-cyan-950/60 hover:bg-cyan-900/80 border-cyan-500/40 text-cyan-300'
             }`}
           >
             <Zap size={13} className="text-cyan-400 animate-pulse" />
-            <span className="hidden sm:inline text-[10px]">SWARM AI HELP</span>
           </button>
         )}
 
-        {/* Theme Toggle Button (Military Matrix vs Daylight Field) */}
+        {/* Theme Toggle Button */}
         <button
           id="btn-toggle-theme"
           onClick={toggleTheme}
@@ -219,63 +208,28 @@ export const Header: React.FC<HeaderProps> = ({
           }
           className={`p-2 rounded-lg border flex items-center gap-1.5 font-mono text-xs font-bold transition-all cursor-pointer ${
             isDaylight
-              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300 shadow-sm'
-              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 hover:border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(0,0,0,0.8)]'
+              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 text-cyan-300'
           }`}
         >
           {isDaylight ? (
-            <>
-              <Sun size={14} className="text-amber-600 animate-spin-slow" />
-              <span className="hidden sm:inline text-[10px]">DAYLIGHT</span>
-            </>
+            <Sun size={14} className="text-amber-600 animate-spin-slow" />
           ) : (
-            <>
-              <Moon size={14} className="text-cyan-400" />
-              <span className="hidden sm:inline text-[10px]">MATRIX</span>
-            </>
+            <Moon size={14} className="text-cyan-400" />
           )}
         </button>
-
-        {/* Real-time Clock HUD */}
-        <div
-          id="header-live-clock"
-          className={`hidden sm:block text-right pl-3 border-l ${
-            isDaylight ? 'border-slate-300' : 'border-cyan-500/20'
-          }`}
-        >
-          <div
-            className={`flex items-center justify-end gap-1.5 text-[9px] font-mono ${
-              isDaylight ? 'text-slate-600' : 'text-slate-400'
-            }`}
-          >
-            <span>{dateString}</span>
-            <span className={isDaylight ? 'text-slate-400' : 'text-slate-600'}>|</span>
-            <span className={isDaylight ? 'text-cyan-800 font-bold' : 'text-cyan-400'}>
-              {utcString}
-            </span>
-          </div>
-          <p
-            className={`text-[12px] font-mono font-black tracking-widest leading-none mt-0.5 ${
-              isDaylight
-                ? 'text-emerald-700'
-                : 'text-emerald-400 drop-shadow-[0_0_6px_rgba(0,255,102,0.5)]'
-            }`}
-          >
-            {timeString}
-          </p>
-        </div>
 
         {/* Refresh Data Button */}
         <button
           id="btn-refresh-data"
           onClick={onRefresh}
           disabled={isRefreshing}
-          title="Refresh All Surveillance Feeds, Alerts & Telemetry"
+          title="Refresh All Feeds & Alerts"
           className={`p-2 rounded-lg border transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
             isDaylight
               ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
-              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 hover:border-cyan-400 text-cyan-400 hover:text-white shadow-[0_0_10px_rgba(0,0,0,0.8)]'
-          } ${isRefreshing ? 'border-cyan-400 ring-2 ring-cyan-400/50 shadow-[0_0_15px_rgba(0,240,255,0.4)]' : ''}`}
+              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 text-cyan-400 hover:text-white'
+          } ${isRefreshing ? 'border-cyan-400 ring-2 ring-cyan-400/50' : ''}`}
         >
           <RefreshCw
             size={14}

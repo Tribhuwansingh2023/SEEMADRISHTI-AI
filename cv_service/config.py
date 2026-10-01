@@ -8,9 +8,11 @@ class CVConfig:
 
     # YOLO Model Configuration
     model_name: str = os.getenv("YOLO_MODEL", "yolov8n.pt")
-    confidence_threshold: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.45"))
-    input_size: int = int(os.getenv("INPUT_SIZE", "640"))
-    frame_skip: int = int(os.getenv("FRAME_SKIP", "2"))  # Process every Nth frame
+    confidence_threshold: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.30"))
+    input_size: int = int(os.getenv("INPUT_SIZE", "960"))
+    frame_skip: int = int(os.getenv("FRAME_SKIP", "1"))  # Process every Nth frame
+    device: str = os.getenv("YOLO_DEVICE", "auto")
+    half_precision: str = os.getenv("HALF_PRECISION", "auto")
 
     # Target Detection Classes (COCO Dataset Mapping)
     # COCO Class IDs:
@@ -45,13 +47,13 @@ class CVConfig:
         }
     )
 
-    # Detection Strategy: FAST (640), BALANCED (960/1280), HIGH_ACCURACY (1280+)
+    # Detection Strategy: FAST (640), BALANCED (960), HIGH_ACCURACY (1280)
     detection_mode: str = os.getenv("DETECTION_MODE", "BALANCED")
     iou_threshold: float = float(os.getenv("IOU_THRESHOLD", "0.45"))
     proximity_buffer_norm: float = float(os.getenv("PROXIMITY_BUFFER_NORM", "0.035"))
 
-    # Maximum detections per frame (prevents payload bloat)
-    max_detections: int = int(os.getenv("MAX_DETECTIONS", "50"))
+    # Maximum detections per frame (supports dense surveillance scenes)
+    max_detections: int = int(os.getenv("MAX_DETECTIONS", "100"))
 
     # Backend Connection
     ws_url: str = os.getenv("BACKEND_WS_URL", "ws://127.0.0.1:3000/ws")
@@ -65,9 +67,10 @@ class CVConfig:
             separator = "&" if "?" in self.ws_url else "?"
             self.ws_url = f"{self.ws_url}{separator}token={self.cv_token}"
 
-    # ByteTrack Tracking Configuration
+    # ByteTrack Tracking Configuration & Anti-Flicker Persistence
     tracker_type: str = os.getenv("TRACKER_TYPE", "bytetrack")
     track_buffer: int = int(os.getenv("TRACK_BUFFER", "30"))  # Frames to preserve lost tracks
+    max_lost_frames: int = int(os.getenv("MAX_LOST_FRAMES", "5"))  # Smooth anti-flicker tolerance
     match_threshold: float = float(os.getenv("MATCH_THRESHOLD", "0.8"))  # IoU association threshold
     track_high_conf: float = float(os.getenv("TRACK_HIGH_CONF", "0.5"))
     track_low_conf: float = float(os.getenv("TRACK_LOW_CONF", "0.1"))

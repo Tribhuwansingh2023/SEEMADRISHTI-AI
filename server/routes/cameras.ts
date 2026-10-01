@@ -58,6 +58,9 @@ camerasRouter.get('/:id/video', (req: Request, res: Response, next: NextFunction
       const visdronePath = `cv_service/tests/fixtures/visdrone/${paddedId}.mp4`;
       
       const candidatePaths = [
+        camNum === 1 ? 'C:\\Users\\mukte\\Downloads\\NearEBlock.mp4' : null,
+        camNum === 2 ? 'C:\\Users\\mukte\\Downloads\\maingateindoors.mp4' : null,
+        camNum === 3 ? 'C:\\Users\\mukte\\Downloads\\maingateoutdoors.mp4' : null,
         visdronePath,
         `cv_service/tests/fixtures/visdrone/CAM-0${((camNum - 1) % 3 === 0 ? '2' : (camNum - 1) % 3 === 1 ? '8' : '9')}.mp4`,
         camNum === 1 ? 'cv_service/tests/fixtures/intrusion_test.mp4' : null,
@@ -70,17 +73,22 @@ camerasRouter.get('/:id/video', (req: Request, res: Response, next: NextFunction
       ].filter(Boolean) as string[];
 
       for (const cand of candidatePaths) {
-        if (fs.existsSync(path.resolve(process.cwd(), cand))) {
+        const p = path.isAbsolute(cand) ? cand : path.resolve(process.cwd(), cand);
+        if (fs.existsSync(p)) {
           videoRelPath = cand;
           break;
         }
       }
     }
 
-    const fullPath = path.resolve(process.cwd(), videoRelPath);
+    const fullPath = path.isAbsolute(videoRelPath) ? path.normalize(videoRelPath) : path.resolve(process.cwd(), videoRelPath);
 
     // Boundary check
-    if (!fullPath.startsWith(path.normalize(process.cwd()))) {
+    const isAllowedDir =
+      fullPath.startsWith(path.normalize(process.cwd())) ||
+      fullPath.startsWith(path.normalize('C:\\Users\\mukte\\Downloads'));
+
+    if (!isAllowedDir) {
       throw new AppError('Access denied: path traversal detected', 403);
     }
 

@@ -4,6 +4,7 @@ import { ViewMode, AlertItem, CameraFeed, MatrixCameraFeed, DefconLevel } from '
 import {
   Sidebar,
   Header,
+  TacticalCommandDashboard,
   KpiCards,
   SystemGauges,
   TacticalMatrixView,
@@ -31,7 +32,6 @@ import {
   SystemTimelineView,
   CameraCalibrationView,
   ReportsModal,
-  TacticalTerminalView,
   TacticalRadarGisView,
   DefenseSandboxView,
   MultiAgentOrchestratorView,
@@ -43,6 +43,7 @@ import {
   LandingPage,
   Auth3DView,
   TacticalOperationsAtmosphere,
+  CctvFootageStudio,
 } from './components';
 
 import {
@@ -84,6 +85,10 @@ function SeemadrishtiMainApp() {
     'historical-logs': 'historical-logs',
     matrix: 'dashboard',
     dashboard: 'dashboard',
+    terminal: 'dashboard',
+    cctv: 'cctv-footage',
+    footage: 'cctv-footage',
+    'cctv-footage': 'cctv-footage',
   };
 
   const currentView: ViewMode = (ROUTE_ALIASES[rawPath] || rawPath || 'dashboard') as ViewMode;
@@ -623,53 +628,55 @@ function SeemadrishtiMainApp() {
         <TacticalOperationsAtmosphere />
 
         {/* Tactical Defense Telemetry Ribbon */}
-        <div
-          className={`h-6 shrink-0 flex-none px-4 flex items-center justify-between text-[9px] font-mono select-none overflow-hidden border-b relative z-10 ${
-            isDaylight
-              ? 'bg-slate-200 border-slate-300 text-slate-700'
-              : 'bg-[#010307] border-cyan-500/20 text-cyan-400'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <span
-              className={`flex items-center gap-1 font-bold ${
-                isDaylight ? 'text-emerald-700' : 'text-emerald-400'
-              }`}
-            >
-              [SEC_NET: ENCRYPTED 256-BIT]
-            </span>
-            <span className="text-slate-400">|</span>
-            <span className="hidden sm:inline">
-              [SYSTEM LATENCY: 14ms // 60 FPS INFERENCE]
-            </span>
-          </div>
+        {currentView !== 'dashboard' && (
+          <div
+            className={`h-6 shrink-0 flex-none px-4 flex items-center justify-between text-[9px] font-mono select-none overflow-hidden border-b relative z-10 ${
+              isDaylight
+                ? 'bg-slate-200 border-slate-300 text-slate-700'
+                : 'bg-[#010307] border-cyan-500/20 text-cyan-400'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex items-center gap-1 font-bold ${
+                  isDaylight ? 'text-emerald-700' : 'text-emerald-400'
+                }`}
+              >
+                [SEC_NET: ENCRYPTED 256-BIT]
+              </span>
+              <span className="text-slate-400">|</span>
+              <span className="hidden sm:inline">
+                [SYSTEM LATENCY: 14ms // 60 FPS INFERENCE]
+              </span>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-rose-600 dark:text-rose-400 font-bold">
-              [ALERTS TODAY: {alerts.length}]
-            </span>
-            {(() => {
-              const defconMeta: Record<DefconLevel, { text: string; badgeCls: string }> = {
-                1: { text: 'DEFCON 1 // MAXIMUM COMBAT READY', badgeCls: 'bg-rose-950/90 border-rose-500 text-rose-400 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]' },
-                2: { text: 'DEFCON 2 // INCURSION IMMINENT', badgeCls: 'bg-orange-950/90 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.4)]' },
-                3: { text: 'DEFCON 3 // INCREASED READINESS', badgeCls: 'bg-amber-950/90 border-amber-500 text-amber-400' },
-                4: { text: 'DEFCON 4 // ACTIVE DEFENSE', badgeCls: 'bg-cyan-950/80 border-cyan-500/40 text-cyan-400' },
-                5: { text: 'DEFCON 5 // PEACETIME NORMAL', badgeCls: 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400' },
-              };
-              const curr = defconMeta[defconLevel] || defconMeta[4];
-              return (
-                <button
-                  type="button"
-                  onClick={() => setCurrentView('settings')}
-                  title="Click to view DEFCON Protocols & Rules of Engagement in System Config"
-                  className={`font-bold hidden sm:inline px-2 py-0.5 rounded border text-[11px] font-mono cursor-pointer transition-all hover:scale-105 active:scale-95 ${curr.badgeCls}`}
-                >
-                  [{curr.text}]
-                </button>
-              );
-            })()}
+            <div className="flex items-center gap-3">
+              <span className="text-rose-600 dark:text-rose-400 font-bold">
+                [ALERTS TODAY: {alerts.length}]
+              </span>
+              {(() => {
+                const defconMeta: Record<DefconLevel, { text: string; badgeCls: string }> = {
+                  1: { text: 'DEFCON 1 // MAXIMUM COMBAT READY', badgeCls: 'bg-rose-950/90 border-rose-500 text-rose-400 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]' },
+                  2: { text: 'DEFCON 2 // INCURSION IMMINENT', badgeCls: 'bg-orange-950/90 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.4)]' },
+                  3: { text: 'DEFCON 3 // INCREASED READINESS', badgeCls: 'bg-amber-950/90 border-amber-500 text-amber-400' },
+                  4: { text: 'DEFCON 4 // ACTIVE DEFENSE', badgeCls: 'bg-cyan-950/80 border-cyan-500/40 text-cyan-400' },
+                  5: { text: 'DEFCON 5 // PEACETIME NORMAL', badgeCls: 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400' },
+                };
+                const curr = defconMeta[defconLevel] || defconMeta[4];
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('settings')}
+                    title="Click to view DEFCON Protocols & Rules of Engagement in System Config"
+                    className={`font-bold hidden sm:inline px-2 py-0.5 rounded border text-[11px] font-mono cursor-pointer transition-all hover:scale-105 active:scale-95 ${curr.badgeCls}`}
+                  >
+                    [{curr.text}]
+                  </button>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 2. Top Header with Right Upper Corner Operator Profile */}
         <Header
@@ -705,94 +712,11 @@ function SeemadrishtiMainApp() {
         {/* Dynamic Main Body by Current View */}
         <main className="flex-1 min-h-0 p-3.5 sm:p-5 overflow-y-auto space-y-5 relative z-10">
           {currentView === 'dashboard' && (
-            <>
-              {/* Surveillance Intelligence AI Search (Phase 20) */}
-              <IntelligenceSearch
-                onOpenIncident={(incId) => {
-                  setCurrentView('inspector');
-                }}
-                onSelectCamera={(cid) => {
-                  setSelectedCameraId(cid);
-                }}
-                onHighlightCameras={(cids) => {
-                  setHighlightedCameras(cids);
-                }}
-                onOpenBehaviorChain={() => {
-                  setCurrentView('inspector');
-                }}
-                onNavigateToTimeline={() => {
-                  setCurrentView('system-timeline');
-                }}
-                onOpenTargetJourney={(tid) => {
-                  if (tid) setSelectedJourneyTrackId(tid);
-                  setCurrentView('target-journey');
-                }}
-                onOpenThreatMap={(cid) => {
-                  if (cid) setSelectedCameraId(cid);
-                  setCurrentView('threat-map');
-                }}
-              />
-
-              {/* 3. Top Metrics Row */}
-              <KpiCards
-                totalCameras={(telemetry as any)?.database?.totalCameras ?? matrixCameras.length}
-                activeCameras={matrixCameras.filter((c) => c.status === 'Online').length}
-                alertsToday={alerts.length}
-                alerts={alerts}
-                totalDetections={(telemetry as any)?.database?.totalEvents ? (telemetry as any).database.totalEvents.toLocaleString() : '4,892'}
-                onCardClick={(type) => {
-                  if (type === 'cameras' || type === 'active') setCurrentView('cameras');
-                  if (type === 'alerts') setCurrentView('alerts');
-                  if (type === 'detections') setCurrentView('detections');
-                }}
-              />
-
-              {/* 4 & 5. Center Section: 9-Camera Tactical Matrix (Left) & Real-time Alert Feed (Right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-                {/* 9-Camera Surveillance Matrix (9 cols on lg) */}
-                <div className="lg:col-span-9 flex flex-col">
-                  <TacticalMatrixView
-                    cameras={matrixCameras}
-                    alerts={alerts}
-                    onUpdateCameraName={handleUpdateCameraName}
-                    onTriggerAlert={handleSimulateIntrusion}
-                    highlightedCameraIds={highlightedCameras}
-                    spotlightCameraOverride={spotlightCameraOverride}
-                    onSelectCameraForDetails={(cam) => {
-                      setSelectedCameraId(String(cam.id));
-                      const match = cameras.find((c) => c.id === String(cam.id)) || {
-                        id: String(cam.id),
-                        name: cam.name,
-                        location: (cam as any).location || 'Border Sector',
-                        status: cam.status as any,
-                        imageUrl: cam.src,
-                      };
-                      setSelectedCameraForModal(match as any);
-                    }}
-                    confidenceThreshold={confidenceThreshold}
-                    onConfidenceThresholdChange={setConfidenceThreshold}
-                  />
-                </div>
-
-                {/* Right Panel: Filterable Real-time Alert Feed (3 cols on lg) */}
-                <div className="lg:col-span-3 flex flex-col">
-                  <AlertsLog
-                    alerts={alerts}
-                    onSelectAlert={(a) => setSelectedAlertForModal(a)}
-                    onViewAllAlerts={() => setCurrentView('alerts')}
-                    onJumpToCamera={(camCode) => {
-                      const match = camCode.match(/\d+/);
-                      const camNum = match ? parseInt(match[0], 10) : 1;
-                      setSpotlightCameraOverride(camNum);
-                      setSelectedCameraId(`cam-${camNum}`);
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* 6. Bottom Row: Circular Hardware Telemetry Gauges */}
-              <SystemGauges telemetry={telemetry} />
-            </>
+            <TacticalCommandDashboard
+              alerts={alerts}
+              onSelectAlert={(a) => setSelectedAlertForModal(a)}
+              onNavigate={(view) => setCurrentView(view)}
+            />
           )}
 
           {currentView === 'mission-control' && (
@@ -913,6 +837,8 @@ function SeemadrishtiMainApp() {
 
           {currentView === 'detections' && <DetectionsView />}
 
+          {currentView === 'cctv-footage' && <CctvFootageStudio />}
+
           {currentView === 'alerts' && (
             <AlertsManagementView
               alerts={alerts}
@@ -953,13 +879,6 @@ function SeemadrishtiMainApp() {
               onTriggerAlert={handleSimulateIntrusion}
               onSetDefcon={handleSetDefconLevel}
               onNavigate={(v) => setCurrentView(v as ViewMode)}
-            />
-          )}
-
-          {currentView === 'terminal' && (
-            <TacticalTerminalView
-              onSetDefcon={handleSetDefconLevel}
-              currentDefcon={defconLevel}
             />
           )}
 
@@ -1031,44 +950,82 @@ function SeemadrishtiMainApp() {
   );
 }
 
+function LoadingScreen() {
+  return (
+    <div className="h-screen flex items-center justify-center bg-[#02040a]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-cyan-500/30 border-t-cyan-400 animate-spin" />
+        <span className="text-cyan-400 font-mono text-xs tracking-widest uppercase animate-pulse">
+          SEEMADRISHTI — Initialising Secure Session…
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function RootAppPortal() {
-  const { currentPortal, setPortal, isAuthenticated, login } = useAuth();
+  const { setPortal, isAuthenticated, isLoading, enterDemoMode } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const autoLoginRef = React.useRef(false);
 
-  const isAuthRoute =
-    location.pathname === '/login' ||
-    location.pathname === '/auth' ||
-    location.pathname === '/signin';
+  const path = location.pathname;
+  const isLanding = path === '/' || path === '' || path === '/landing' || path === '/home';
+  const isAuthPage = path === '/login' || path === '/auth' || path === '/signin' ||
+                     path === '/signup' || path === '/register';
+  const isSignupPage = path === '/signup' || path === '/register';
 
-  const isSignupRoute =
-    location.pathname === '/signup' ||
-    location.pathname === '/register';
-
-  const isLandingRoute = location.pathname === '/' || location.pathname === '';
-
-  // If unauthenticated and accessing protected tactical routes, redirect to login
+  // Single effect: handle all auth-driven navigation
   useEffect(() => {
-    if (!isAuthenticated && !isLandingRoute && !isAuthRoute && !isSignupRoute) {
-      navigate('/login', { replace: true });
-    }
-  }, [isAuthenticated, isLandingRoute, isAuthRoute, isSignupRoute, navigate]);
+    if (isLoading) return;
 
-  // If authenticated and on auth/signup routes, seamlessly navigate to dashboard
-  useEffect(() => {
-    if (isAuthenticated && (isAuthRoute || isSignupRoute)) {
+    if (isAuthenticated && isAuthPage) {
+      // Logged in user visits login/signup → send to dashboard
       navigate('/dashboard', { replace: true });
+      return;
     }
-  }, [isAuthenticated, isAuthRoute, isSignupRoute, navigate]);
 
-  if (isAuthenticated && (currentPortal !== 'landing' || !isLandingRoute)) {
-    return <SeemadrishtiMainApp />;
+    if (!isAuthenticated && !isLanding && !isAuthPage && !autoLoginRef.current) {
+      // Unauthenticated user visits a protected route → auto-login then stay
+      autoLoginRef.current = true;
+      enterDemoMode('Commander').catch(() => {
+        autoLoginRef.current = false;
+        navigate('/login', { replace: true });
+      });
+    }
+  }, [isLoading, isAuthenticated, isLanding, isAuthPage, navigate, enterDemoMode]);
+
+  // ── Render tree ────────────────────────────────────────────────────────────
+
+  // 1. Session initialising
+  if (isLoading) return <LoadingScreen />;
+
+  // 2. Landing page — always renders at /  (authenticated or not)
+  if (isLanding) {
+    return (
+      <LandingPage
+        onEnterAuth={async () => {
+          if (isAuthenticated) {
+            navigate('/dashboard');
+            return;
+          }
+          try {
+            await enterDemoMode('Commander');
+            navigate('/dashboard');
+          } catch {
+            setPortal('auth');
+            navigate('/login');
+          }
+        }}
+      />
+    );
   }
 
-  if (isAuthRoute || isSignupRoute || currentPortal === 'auth') {
+  // 3. Login / Signup pages
+  if (isAuthPage) {
     return (
       <Auth3DView
-        initialMode={isSignupRoute ? 'signup' : 'login'}
+        initialMode={isSignupPage ? 'signup' : 'login'}
         onNavigateLanding={() => {
           setPortal('landing');
           navigate('/');
@@ -1077,15 +1034,15 @@ function RootAppPortal() {
     );
   }
 
-  return (
-    <LandingPage
-      onEnterAuth={async () => {
-        setPortal('auth');
-        navigate('/login');
-      }}
-    />
-  );
+  // 4. Protected app routes
+  if (!isAuthenticated) {
+    // Still waiting for auto-login to complete
+    return <LoadingScreen />;
+  }
+
+  return <SeemadrishtiMainApp />;
 }
+
 
 export default function App() {
   return (

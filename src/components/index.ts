@@ -4,6 +4,7 @@
 
 // Layout & Core Command Primitives
 export * from './layout';
+export * from './dashboard/TacticalCommandDashboard';
 
 // Live Video Feeds & Matrix Streaming
 export * from './streaming';
@@ -42,6 +43,7 @@ export * from './gis/TacticalRadarGisView';
 
 // Command Landing & Onboarding
 export * from './landing/LandingPage';
+export * from './landing/HeroDashboard3D';
 
 // CCTV Matrix Sub-Components & Controls
 export * from './matrix/CameraControlsBar';

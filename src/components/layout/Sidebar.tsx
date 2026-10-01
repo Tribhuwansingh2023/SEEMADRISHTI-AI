@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   LayoutGrid,
+  LayoutDashboard,
   Video,
   ScanEye,
   TriangleAlert,
@@ -24,11 +25,11 @@ import {
   Lock,
   Bot,
   Radar,
-  Terminal,
   Zap,
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ViewMode } from '../../types';
 import { SeemadrishtiLogo } from './SeemadrishtiLogo';
 import { recordingEngine } from '../../utils/recordingManager';
@@ -53,7 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { theme, isDaylight } = useTheme();
   const { user, logout, setIsProfileModalOpen } = useAuth();
-  const { lockNow } = useSecurity();
+  const { lockNow, resetLock } = useSecurity();
+  const navigate = useNavigate();
   const [activeRecCount, setActiveRecCount] = useState(0);
   const [savedClipsCount, setSavedClipsCount] = useState(() => recordingEngine.getSavedClips().length);
 
@@ -84,11 +86,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       category: 'SURVEILLANCE',
       items: [
-        { id: 'dashboard' as ViewMode, label: 'Camera Wall', icon: LayoutGrid, code: '[WALL_09]', isLive: true },
+        { id: 'dashboard' as ViewMode, label: 'Dashboard', icon: LayoutDashboard, code: '[DASHBOARD]', isLive: true },
         { id: 'cameras' as ViewMode, label: 'Live Cameras', icon: Video, badge: '9 FEEDS', code: '[RTSP_4K]' },
         { id: 'historical-logs' as ViewMode, label: 'Recorded Footage', icon: Film, isRecTab: true, badge: activeRecCount > 0 ? `${activeRecCount} REC` : `${savedClipsCount} CLIPS`, code: '[NVR_VAULT]' },
         { id: 'camera-fleet' as ViewMode, label: 'Camera Fleet', icon: Video, badge: '9 NODES', code: '[FLEET_09]' },
         { id: 'livestream' as ViewMode, label: 'Quad Live Stream', icon: Tv, code: '[4-WAY]' },
+        { id: 'cctv-footage' as ViewMode, label: 'CCTV Video Studio', icon: Video, badge: 'AI FEED', isNew: true, code: '[CCTV_SIM]' },
         { id: 'stitching' as ViewMode, label: 'Multi-Cam Handover', icon: Layers, isNew: true, code: '[HANDOVER]' },
       ],
     },
@@ -118,7 +121,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'radar-map' as ViewMode, label: 'Tactical Radar GIS', icon: Radar, badge: '360° GIS', isAlert: true, code: '[GIS_RADAR]' },
         { id: 'sandbox' as ViewMode, label: 'Defense Sandbox', icon: Zap, badge: 'EVAL LAB', isAlert: true, code: '[SIM_LAB]' },
-        { id: 'terminal' as ViewMode, label: 'Edge Node CLI', icon: Terminal, badge: 'PORT 8000', code: '[TACTICAL_SH]' },
         { id: 'calibration' as ViewMode, label: 'Zone Calibration', icon: Sliders, badge: 'EDITOR', code: '[GEO_CALIB]' },
         { id: 'diagnostics' as ViewMode, label: 'Stream Diagnostics', icon: Activity, badge: '60 FPS', isHealth: true, code: '[HEALTH_NET]' },
         { id: 'settings' as ViewMode, label: 'System Config', icon: Settings, code: '[SYS_CONF]' },
@@ -236,7 +238,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           }}
                           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-150 cursor-pointer group relative ${
                             isActive
-                              ? isDaylight
+                              ? item.id === 'dashboard'
+                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                                : isDaylight
                                 ? 'bg-cyan-700 text-white font-bold shadow-sm'
                                 : 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow-[0_0_15px_rgba(0,240,255,0.2)]'
                               : isDaylight
@@ -315,6 +319,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
+        {/* Defense Motivation Banner: PROTECTING WHAT MATTERS */}
+        <div className="shrink-0 flex-none px-3 pt-2 pb-1 select-none">
+          <div className="rounded-xl overflow-hidden border border-slate-800/80 bg-[#050b14] relative group shadow-md">
+            <img
+              src="/assets/soldier_silhouette.png"
+              alt="Protecting What Matters"
+              className="w-full h-28 object-cover object-center opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050b14] via-[#050b14]/50 to-transparent flex items-end justify-center pb-2 px-2">
+              <span className="text-[10px] font-black tracking-widest text-slate-200 uppercase font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
+                PROTECTING WHAT MATTERS
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* 3. Bottom Operator & Hardware Section (Fixed Bottom, Never Scrolls, Never Overlaps) */}
         <div
           className={`sidebar-footer shrink-0 flex-none mt-auto p-3 border-t select-none ${
@@ -339,7 +359,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               id="nav-logout"
-              onClick={logout}
+              onClick={() => {
+                logout(() => {
+                  resetLock();
+                  navigate('/login', { replace: true });
+                });
+              }}
               title="Logout"
               className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg transition-all cursor-pointer text-[10px] font-mono font-bold ${
                 isDaylight

@@ -1,30 +1,30 @@
 {
   "cam-01": {
-    "name": "Sector Alpha Main Gate",
+    "name": "Near E-Block Surveillance",
     "source_type": "mp4",
-    "source_uri": "cv_service/tests/fixtures/visdrone/CAM-01.mp4",
-    "resolution": "1904x1072",
-    "target_fps": 25,
+    "source_uri": "C:\\Users\\mukte\\Downloads\\NearEBlock.mp4",
+    "resolution": "3840x2160",
+    "target_fps": 60,
     "enabled": true,
-    "description": "Perimeter entry point - real VisDrone UAV sequence uav0000339_00001_v"
+    "description": "Perimeter entry & transit point - Near E-Block 4K CCTV footage"
   },
   "cam-02": {
-    "name": "Sector Alpha East Perimeter",
+    "name": "Main Gate Indoors Checkpoint",
     "source_type": "mp4",
-    "source_uri": "cv_service/tests/fixtures/visdrone/CAM-02.mp4",
-    "resolution": "1344x756",
-    "target_fps": 25,
+    "source_uri": "C:\\Users\\mukte\\Downloads\\maingateindoors.mp4",
+    "resolution": "3840x2160",
+    "target_fps": 60,
     "enabled": true,
-    "description": "High-density pedestrian patrol corridor - real VisDrone UAV sequence uav0000086_00000_v (A)"
+    "description": "Main gate indoor pedestrian access checkpoint - 4K CCTV footage"
   },
   "cam-03": {
-    "name": "Sector Bravo Access Road",
+    "name": "Main Gate Outdoors Approach",
     "source_type": "mp4",
-    "source_uri": "cv_service/tests/fixtures/visdrone/CAM-03.mp4",
-    "resolution": "1344x756",
-    "target_fps": 25,
+    "source_uri": "C:\\Users\\mukte\\Downloads\\maingateoutdoors.mp4",
+    "resolution": "3840x2160",
+    "target_fps": 60,
     "enabled": true,
-    "description": "Rapid motorized & vehicle approach road - real VisDrone UAV sequence uav0000182_00000_v"
+    "description": "Main gate exterior vehicle & motorcycle road approach - 4K CCTV footage"
   },
   "cam-04": {
     "name": "Sector Bravo Outer Fence",
