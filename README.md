@@ -317,26 +317,6 @@ python cv_service/tools/verify_all_ai.py
 python cv_service/main.py --source 0 --camera-id cam-01
 ```
 
----
-
-## 👥 Contributing & Git Identity
-
-To ensure your commits appear with your GitHub profile avatar and link to your username:
-
-```bash
-# Set your GitHub username
-git config --global user.name "YourGitHubUsername"
-
-# If you have "Keep my email addresses private" enabled on GitHub:
-# Use your noreply email from https://github.com/settings/emails:
-git config --global user.email "ID+YourUsername@users.noreply.github.com"
-
-# Otherwise, use your primary GitHub email:
-git config --global user.email "your-email@example.com"
-```
-
----
-
 ## 🛡️ License & Acknowledgements
 
 Developed for **Smart India Hackathon (SIH26187)** under the **Ministry of Home Affairs**.
