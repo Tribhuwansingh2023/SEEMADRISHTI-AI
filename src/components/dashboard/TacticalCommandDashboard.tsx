@@ -597,7 +597,7 @@ export const TacticalCommandDashboard: React.FC<TacticalCommandDashboardProps> =
           </div>
 
           {/* Events List */}
-          <div className="flex-1 p-2 sm:p-2.5 space-y-1.5 overflow-y-auto max-h-[380px] lg:max-h-[390px] custom-scrollbar">
+          <div className="flex-1 min-h-0 p-2 sm:p-2.5 space-y-1.5 overflow-y-auto custom-scrollbar">
             {liveEvents.map((ev) => {
               const IconComp = ev.icon;
               return (
@@ -640,6 +640,15 @@ export const TacticalCommandDashboard: React.FC<TacticalCommandDashboardProps> =
                 </div>
               );
             })}
+          </div>
+
+          {/* Card Footer Bar */}
+          <div className="flex items-center justify-between px-3.5 py-2 bg-[#081224] border-t border-slate-800/80 text-[10px] text-slate-400 font-mono">
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-bold tracking-wider">LIVE TELEMETRY STREAM</span>
+            </div>
+            <span className="text-slate-400 font-semibold">{liveEvents.length} Events Logged</span>
           </div>
         </div>
       </div>
