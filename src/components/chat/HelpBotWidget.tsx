@@ -1,12 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, User, Loader2, Sparkles, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { AiCopilotAvatar, CopilotVisualState } from './AiCopilotAvatar';
 
 export interface ChatMessage {
   id: string;
   role: 'user' | 'model';
   text: string;
+  action?: {
+    type: string;
+    target?: string;
+    params?: Record<string, any>;
+  };
+  timestamp?: number;
 }
 
 export function HelpBotWidget() {
@@ -14,23 +21,84 @@ export function HelpBotWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copilotState, setCopilotState] = useState<CopilotVisualState>('ready');
+  const [statusTelemetry, setStatusTelemetry] = useState<{
+    camerasOnline: number;
+    camerasTotal: number;
+    latencyMs: number;
+    fps: number;
+  }>({
+    camerasOnline: 9,
+    camerasTotal: 9,
+    latencyMs: 18,
+    fps: 30,
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Poll or fetch live Copilot status telemetry on mount / periodically
+  const fetchStatus = async () => {
+    try {
+      const res = await fetchWithAuth('/api/chat/status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.snapshot) {
+          setStatusTelemetry({
+            camerasOnline: data.snapshot.camerasOnline,
+            camerasTotal: data.snapshot.camerasTotal,
+            latencyMs: data.snapshot.aiHealth?.latencyMs || 18,
+            fps: data.snapshot.aiHealth?.fps || 30,
+          });
+          if (data.snapshot.aiHealth?.status === 'DEGRADED') {
+            setCopilotState('degraded');
+          } else if (data.snapshot.camerasOnline === 0) {
+            setCopilotState('limited_data');
+          } else if (!isLoading) {
+            setCopilotState('ready');
+          }
+        }
+      }
+    } catch {
+      // Keep optimistic fallback
+    }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
+  const executeAction = (action: { type: string; target?: string; params?: any }) => {
+    window.dispatchEvent(
+      new CustomEvent('seemadrishti:action', {
+        detail: action,
+      })
+    );
+  };
+
   const sendQuery = async (queryText: string) => {
     if (!queryText.trim() || isLoading) return;
 
-    const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text: queryText.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const userMsg: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      text: queryText.trim(),
+      timestamp: Date.now(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
+    setCopilotState('analyzing');
 
     try {
-      const historyPayload = messages.map(m => ({ role: m.role, text: m.text }));
-      
+      const historyPayload = messages.map((m) => ({ role: m.role, text: m.text }));
+
       const response = await fetchWithAuth('/api/chat', {
         method: 'POST',
         headers: {
@@ -38,8 +106,8 @@ export function HelpBotWidget() {
         },
         body: JSON.stringify({
           message: userMsg.text,
-          history: historyPayload
-        })
+          history: historyPayload,
+        }),
       });
 
       if (!response.ok || !response.body) {
@@ -48,9 +116,12 @@ export function HelpBotWidget() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      
+
       const botMsgId = (Date.now() + 1).toString();
-      setMessages(prev => [...prev, { id: botMsgId, role: 'model', text: '' }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: botMsgId, role: 'model', text: '', timestamp: Date.now() },
+      ]);
 
       let done = false;
       while (!done) {
@@ -67,31 +138,45 @@ export function HelpBotWidget() {
               }
               try {
                 const parsed = JSON.parse(data);
+                if (parsed.action) {
+                  // Attach action to the message and optionally auto-execute non-destructive views
+                  setMessages((prev) =>
+                    prev.map((m) => (m.id === botMsgId ? { ...m, action: parsed.action } : m))
+                  );
+                  executeAction(parsed.action);
+                }
                 if (parsed.text) {
-                  setMessages(prev => prev.map(m => 
-                    m.id === botMsgId ? { ...m, text: m.text + parsed.text } : m
-                  ));
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === botMsgId ? { ...m, text: m.text + parsed.text } : m
+                    )
+                  );
                 } else if (parsed.error) {
-                  setMessages(prev => prev.map(m => 
-                    m.id === botMsgId ? { ...m, text: m.text + '\n' + parsed.error } : m
-                  ));
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === botMsgId ? { ...m, text: m.text + '\n' + parsed.error } : m
+                    )
+                  );
                 }
               } catch (e) {
-                console.error("Error parsing SSE data", e);
+                console.error('Error parsing SSE data', e);
               }
             }
           }
         }
       }
+      setCopilotState('ready');
     } catch (error) {
-      console.error('Chat error:', error);
-      setMessages(prev => [
+      console.error('Copilot request error:', error);
+      setCopilotState('degraded');
+      setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: 'model',
-          text: 'I am experiencing high network traffic. Please try asking again or select one of the suggested tactical topics.'
-        }
+          text: "I don't have enough data from the current surveillance feed. Telemetry stream is degraded or reconnecting.",
+          timestamp: Date.now(),
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -103,112 +188,191 @@ export function HelpBotWidget() {
     await sendQuery(input);
   };
 
-  const SUGGESTED_QUESTIONS = [
-    'What is Seemadrishti?',
-    'What is Camera Fleet?',
-    'Explain the 5 Swarm Agents',
-    'How does Target Journey work?',
-    'Explain Stream Diagnostics',
+  const clearChat = () => {
+    setMessages([]);
+  };
+
+  const SUGGESTED_QUERIES = [
+    { label: 'What is happening right now?', icon: '⚡' },
+    { label: 'Show active alerts', icon: '⚠' },
+    { label: 'Which cameras are online?', icon: '📹' },
+    { label: 'Show latest plate detections', icon: '🔍' },
+    { label: 'Summarize the last 10 minutes', icon: '⏱' },
+    { label: 'Check AI inference health', icon: '🧠' },
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-84 sm:w-96 h-[520px] bg-[#040812]/95 border border-cyan-500/30 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.95)] backdrop-blur-xl flex flex-col overflow-hidden mb-3"
+            exit={{ opacity: 0, y: 16, scale: 0.96 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="w-88 sm:w-[420px] h-[550px] bg-[#030712]/95 border border-cyan-500/30 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.95),0_0_30px_rgba(0,240,255,0.15)] backdrop-blur-2xl flex flex-col overflow-hidden mb-3 select-none"
           >
-            {/* Tactical Header */}
-            <div className="bg-[#02040a] px-4 py-3 border-b border-cyan-500/20 flex items-center justify-between">
+            {/* Command-Center Header */}
+            <div className="bg-[#02050e] px-3.5 py-2.5 border-b border-white/[0.08] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="bg-cyan-950/80 border border-cyan-500/40 p-1.5 rounded-lg text-cyan-300 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
-                  <Bot className="w-4 h-4" />
-                </div>
+                <AiCopilotAvatar state={copilotState} size="sm" />
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="text-xs font-bold text-cyan-200 font-mono tracking-wider uppercase">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-white font-mono tracking-wider">
                       SEEMADRISHTI COPILOT
-                    </h3>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      {copilotState.toUpperCase()}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-mono">Autonomous Swarm & Defense Advisory</p>
+                  <p className="text-[9.5px] text-slate-400 font-mono tracking-wide">
+                    AI Surveillance &amp; Operations Assistant
+                  </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-rose-400 p-1 rounded-md transition-colors cursor-pointer"
-                title="Close Copilot"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <button
+                    onClick={clearChat}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/[0.04] transition-all cursor-pointer"
+                    title="Clear Conversation"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+                <button
+                  onClick={fetchStatus}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/[0.04] transition-all cursor-pointer"
+                  title="Refresh Live Telemetry"
+                >
+                  <RefreshCw size={13} />
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/[0.04] transition-all cursor-pointer"
+                  title="Minimize Copilot"
+                >
+                  <X size={15} />
+                </button>
+              </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#030712]/70 font-mono text-xs">
+            {/* Sub-Header Live Telemetry Bar */}
+            <div className="px-3.5 py-1.5 bg-[#010309] border-b border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-slate-400 select-none">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {statusTelemetry.camerasOnline}/{statusTelemetry.camerasTotal} CAMS ONLINE
+                </span>
+                <span>•</span>
+                <span>LATENCY: {statusTelemetry.latencyMs}ms</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                <Sparkles size={10} />
+                <span>YOLOv8 + BYTETRACK</span>
+              </div>
+            </div>
+
+            {/* Message Area */}
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#020612]/75 font-mono text-xs">
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center px-4 py-3">
-                  <div className="w-12 h-12 bg-cyan-950/60 border border-cyan-500/40 rounded-full flex items-center justify-center mb-2.5 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.25)]">
-                    <Bot className="w-6 h-6" />
+                <div className="h-full flex flex-col items-center justify-center text-center px-4 py-2">
+                  <div className="mb-3">
+                    <AiCopilotAvatar state={copilotState} size="xl" />
                   </div>
-                  <h4 className="text-cyan-200 font-bold text-xs mb-1 tracking-wider uppercase">TACTICAL INTELLIGENCE COPILOT</h4>
-                  <p className="text-[10px] text-slate-400 max-w-[280px] mb-3 font-sans leading-relaxed">
-                    Direct access to surveillance telemetry, 5-agent swarm coordination, and Section 65B forensics:
+                  <h4 className="text-white font-bold text-xs tracking-wider uppercase mb-1">
+                    SEEMADRISHTI AI COPILOT
+                  </h4>
+                  <p className="text-[10px] text-cyan-400 font-mono mb-2 italic">
+                    "See more. Understand faster. Act smarter."
                   </p>
-                  <div className="flex flex-col gap-1.5 w-full">
-                    {SUGGESTED_QUESTIONS.map((q, idx) => (
+                  <p className="text-[10px] text-slate-400 max-w-[320px] mb-4 font-sans leading-relaxed">
+                    Grounded in real-time CCTV detections, optical tripwires, YOLO tracking, and Section 65B forensic chain of custody.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full">
+                    {SUGGESTED_QUERIES.map((q, idx) => (
                       <button
                         key={idx}
-                        onClick={() => sendQuery(q)}
-                        className="w-full px-3 py-1.5 text-[11px] rounded-lg bg-[#090d16] hover:bg-cyan-950/40 text-cyan-300 border border-cyan-500/20 hover:border-cyan-400/60 transition-all text-left font-mono cursor-pointer flex items-center justify-between group"
+                        onClick={() => sendQuery(q.label)}
+                        className="px-2.5 py-2 text-[10px] rounded-xl bg-white/[0.03] hover:bg-cyan-500/[0.12] text-slate-300 hover:text-cyan-200 border border-white/[0.08] hover:border-cyan-400/50 transition-all text-left font-mono cursor-pointer flex items-center justify-between group shadow-xs active:scale-95"
                       >
-                        <span className="truncate">{q}</span>
-                        <span className="text-slate-600 group-hover:text-cyan-400 text-[10px]">→</span>
+                        <span className="truncate pr-1">
+                          {q.icon} {q.label}
+                        </span>
+                        <span className="text-slate-600 group-hover:text-cyan-400 text-[10px]">
+                          →
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
               ) : (
-                messages.map(msg => (
-                  <div 
-                    key={msg.id} 
+                messages.map((msg) => (
+                  <div
+                    key={msg.id}
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-2 max-w-[88%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 border ${
-                        msg.role === 'user' 
-                          ? 'bg-cyan-950 border-cyan-400/50 text-cyan-300' 
-                          : 'bg-slate-900 border-slate-700 text-slate-300'
-                      }`}>
+                    <div
+                      className={`flex gap-2 max-w-[92%] ${
+                        msg.role === 'user' ? 'flex-row-reverse' : ''
+                      }`}
+                    >
+                      <div className="shrink-0 mt-0.5">
                         {msg.role === 'user' ? (
-                          <User className="w-3 h-3 text-cyan-300" />
+                          <div className="w-6 h-6 rounded-full bg-cyan-950 border border-cyan-400/50 text-cyan-300 flex items-center justify-center">
+                            <User size={12} />
+                          </div>
                         ) : (
-                          <Bot className="w-3 h-3 text-cyan-400" />
+                          <AiCopilotAvatar state="ready" size="xs" />
                         )}
                       </div>
-                      <div className={`px-3 py-2 rounded-xl text-xs whitespace-pre-wrap leading-relaxed ${
-                        msg.role === 'user' 
-                          ? 'bg-cyan-900/60 text-cyan-100 border border-cyan-500/40 rounded-tr-xs shadow-[0_0_12px_rgba(0,240,255,0.15)]' 
-                          : 'bg-[#090d16] text-slate-200 border border-slate-800 rounded-tl-xs shadow-md'
-                      }`}>
-                        {msg.text}
+
+                      <div className="flex flex-col gap-1.5">
+                        <div
+                          className={`px-3.5 py-2.5 rounded-2xl text-xs whitespace-pre-wrap leading-relaxed shadow-md ${
+                            msg.role === 'user'
+                              ? 'bg-gradient-to-r from-cyan-950/80 to-teal-950/80 text-cyan-100 border border-cyan-500/40 rounded-tr-xs shadow-[0_0_15px_rgba(0,240,255,0.15)]'
+                              : 'bg-[#050b18] text-slate-200 border border-white/[0.10] rounded-tl-xs shadow-md'
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+
+                        {/* Action execution pill if returned by the Copilot */}
+                        {msg.action && (
+                          <div className="flex items-center gap-1.5 self-start">
+                            <button
+                              onClick={() => msg.action && executeAction(msg.action)}
+                              className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9.5px] font-mono font-bold tracking-wider flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-xs"
+                            >
+                              <ExternalLink size={10} />
+                              <span>
+                                {msg.action.type === 'open_camera'
+                                  ? `SWITCH TO ${msg.action.target?.toUpperCase()}`
+                                  : 'EXECUTE ACTION'}
+                              </span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))
               )}
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="flex gap-2 max-w-[85%]">
-                    <div className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 bg-slate-900 border border-slate-700">
-                      <Bot className="w-3 h-3 text-cyan-400" />
+                    <div className="shrink-0 mt-0.5">
+                      <AiCopilotAvatar state="analyzing" size="xs" />
                     </div>
-                    <div className="px-3 py-2 rounded-xl bg-[#090d16] border border-cyan-500/30 rounded-tl-xs flex items-center gap-2 h-[34px]">
+                    <div className="px-3 py-2 rounded-xl bg-[#050b18] border border-cyan-400/40 rounded-tl-xs flex items-center gap-2 h-[34px] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
                       <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-                      <span className="text-[10px] text-slate-400 font-mono">Synthesizing intelligence...</span>
+                      <span className="text-[10px] text-cyan-300 font-mono tracking-wider">
+                        ANALYZING SURVEILLANCE TELEMETRY...
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -216,20 +380,21 @@ export function HelpBotWidget() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-2.5 bg-[#02040a] border-t border-cyan-500/20">
-              <form onSubmit={handleSubmit} className="relative">
+            {/* Input Bar */}
+            <div className="p-2.5 bg-[#02050e] border-t border-white/[0.08]">
+              <form onSubmit={handleSubmit} className="relative flex items-center">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Enter tactical query..."
-                  className="w-full bg-[#090d16] border border-slate-800 rounded-lg pl-3 pr-9 py-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-500/40 transition-all"
+                  placeholder="Ask Copilot (e.g. 'What is happening right now?', 'Show CAM-03')..."
+                  className="w-full bg-[#050a16] border border-white/[0.12] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 rounded-xl pl-3 pr-10 py-2.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none transition-all"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="absolute right-1 top-1 bottom-1 px-2.5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white rounded-md transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-sm"
+                  className="absolute right-1.5 px-2.5 py-1.5 bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 disabled:opacity-30 text-black font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-sm"
+                  title="Send Query"
                 >
                   <Send className="w-3.5 h-3.5" />
                 </button>
@@ -239,21 +404,43 @@ export function HelpBotWidget() {
         )}
       </AnimatePresence>
 
-      {/* Floating Tactical Launcher Button */}
+      {/* Small Futuristic Round AI-Bot Floating Launcher */}
       <div className="flex items-center gap-2">
         {!isOpen && (
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#040812]/90 border border-cyan-500/30 text-[10px] font-mono font-bold tracking-wider text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.2)] backdrop-blur-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            AI COPILOT
+          <div
+            onClick={() => setIsOpen(true)}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#040816]/95 border border-cyan-500/40 text-[10px] font-mono font-bold tracking-wider text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.25)] backdrop-blur-xl cursor-pointer hover:scale-105 active:scale-95 transition-all group"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                copilotState === 'degraded'
+                  ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
+                  : copilotState === 'limited_data'
+                  ? 'bg-amber-400 shadow-[0_0_6px_#f59e0b]'
+                  : 'bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse'
+              }`}
+            />
+            <span>AI COPILOT</span>
+            <span className="text-[8px] text-slate-400 font-semibold group-hover:text-cyan-300">
+              {statusTelemetry.camerasOnline}/{statusTelemetry.camerasTotal} CAMS
+            </span>
           </div>
         )}
+
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-12 h-12 rounded-full bg-[#040812] border-2 border-cyan-400/80 hover:border-cyan-300 text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.35)] hover:shadow-[0_0_30px_rgba(0,240,255,0.6)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
-          title="Tactical AI Copilot & Defense Help Bot"
+          className={`relative rounded-full p-0.5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-[0_0_25px_rgba(0,240,255,0.45)] hover:shadow-[0_0_35px_rgba(0,240,255,0.7)] ${
+            isOpen ? 'rotate-90' : ''
+          }`}
+          title="SEEMADRISHTI AI COPILOT — Surveillance Operations Assistant"
         >
-          <span className="absolute -inset-1 rounded-full border border-cyan-500/30 animate-ping pointer-events-none opacity-40"></span>
-          {isOpen ? <X className="w-5 h-5 text-rose-400" /> : <Bot className="w-5 h-5 text-cyan-300" />}
+          {isOpen ? (
+            <div className="w-12 h-12 rounded-full bg-[#030712] border-2 border-rose-500/80 text-rose-400 flex items-center justify-center shadow-lg">
+              <X className="w-5 h-5" />
+            </div>
+          ) : (
+            <AiCopilotAvatar state={copilotState} size="lg" />
+          )}
         </button>
       </div>
     </div>

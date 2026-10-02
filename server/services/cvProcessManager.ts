@@ -36,6 +36,16 @@ export function enableCvAutoRestart(): void {
   forceOffline = false;
 }
 
+let latestFrameResult: FrameProcessingResult | null = null;
+
+export function getLatestFrameResult(): FrameProcessingResult | null {
+  return latestFrameResult;
+}
+
+export function isCvProcessorHealthy(): boolean {
+  return isHealthy && !forceOffline;
+}
+
 export interface FrameProcessingResult {
   success: boolean;
   camera_id: string;
@@ -212,6 +222,10 @@ export async function dispatchWebcamFrame(
     }
 
     const result = (await res.json()) as FrameProcessingResult;
+
+    if (result && result.success) {
+      latestFrameResult = result;
+    }
 
     // Broadcast live telemetry packets over WebSocket to all connected tactical dashboards
     if (result && result.success && !(result as any).dropped) {

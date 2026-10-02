@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { getLiveSurveillanceSnapshot, generateTacticalCopilotResponse } from '../services/copilotService';
 
 dotenv.config();
 
@@ -199,11 +200,15 @@ function generateContextualResponse(userText: string): string {
   );
 }
 
-// Stream text to client with human-like typing cadence
-async function streamTextResponse(res: Response, fullText: string) {
+// Stream text to client with human-like typing cadence and optional action trigger
+async function streamTextResponse(res: Response, fullText: string, action?: any) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+
+  if (action) {
+    res.write(`data: ${JSON.stringify({ action })}\n\n`);
+  }
 
   const words = fullText.split(' ');
   const chunkSize = 4;
@@ -212,12 +217,29 @@ async function streamTextResponse(res: Response, fullText: string) {
     const slice = words.slice(i, i + chunkSize).join(' ') + (i + chunkSize < words.length ? ' ' : '');
     res.write(`data: ${JSON.stringify({ text: slice })}\n\n`);
     // Brief 15ms pause for realistic typing stream
-    await new Promise((r) => setTimeout(r, 18));
+    await new Promise((r) => setTimeout(r, 16));
   }
 
   res.write('data: [DONE]\n\n');
   res.end();
 }
+
+/**
+ * GET /api/chat/status
+ * Exposes live AI Copilot readiness, telemetry, and camera status for UI badges.
+ */
+chatRouter.get('/status', (_req: Request, res: Response) => {
+  try {
+    const snapshot = getLiveSurveillanceSnapshot();
+    return res.json({
+      success: true,
+      status: snapshot.aiHealth.status === 'OPTIMAL' ? 'READY' : snapshot.aiHealth.status,
+      snapshot,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 chatRouter.post('/', async (req: Request, res: Response) => {
   try {
@@ -227,17 +249,42 @@ chatRouter.post('/', async (req: Request, res: Response) => {
     }
 
     const trimmedMsg = message.trim();
+    const snapshot = getLiveSurveillanceSnapshot();
 
-    // 1. Instant Tactical Knowledge Base check (Instantaneous response for all core platform questions)
-    const directTacticalMatch = findTacticalResponse(trimmedMsg);
-    if (directTacticalMatch) {
-      await streamTextResponse(res, directTacticalMatch);
+    // 1. High-Precision Tactical Surveillance Engine (Instantaneous, 100% grounded in real application data)
+    const copilotEvaluation = generateTacticalCopilotResponse(trimmedMsg, snapshot);
+    // If it's a specific recognized operational or situational query, stream directly
+    const isDirectTacticalMatch = findTacticalResponse(trimmedMsg);
+
+    const isRecognizedOperational =
+      trimmedMsg.toLowerCase().includes('what is happening') ||
+      trimmedMsg.toLowerCase().includes('status') ||
+      trimmedMsg.toLowerCase().includes('people') ||
+      trimmedMsg.toLowerCase().includes('vehicle') ||
+      trimmedMsg.toLowerCase().includes('camera') ||
+      trimmedMsg.toLowerCase().includes('alert') ||
+      trimmedMsg.toLowerCase().includes('incident') ||
+      trimmedMsg.toLowerCase().includes('minute') ||
+      trimmedMsg.toLowerCase().includes('plate') ||
+      trimmedMsg.toLowerCase().includes('dangerous') ||
+      trimmedMsg.toLowerCase().includes('slow') ||
+      trimmedMsg.toLowerCase().includes('fps') ||
+      trimmedMsg.toLowerCase().includes('latency') ||
+      Boolean(copilotEvaluation.action);
+
+    if (isRecognizedOperational) {
+      await streamTextResponse(res, copilotEvaluation.text, copilotEvaluation.action);
+      return;
+    }
+
+    if (isDirectTacticalMatch) {
+      await streamTextResponse(res, isDirectTacticalMatch);
       return;
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // 2. Dynamic Gemini Cloud processing for open-ended queries
+    // 2. Dynamic Gemini Cloud processing for open-ended queries with Grounded Surveillance Context
     if (apiKey && apiKey !== 'undefined' && apiKey.length > 10) {
       try {
         const ai = new GoogleGenAI({
@@ -264,6 +311,27 @@ chatRouter.post('/', async (req: Request, res: Response) => {
         ];
         let streamSuccess = false;
 
+        const systemPrompt = `You are SEEMADRISHTI AI COPILOT, a Professional AI Surveillance Operations Copilot for the SEEMADRISHTI defense surveillance system.
+Role: AI Surveillance & Security Operations Assistant.
+Core philosophy: "See more. Understand faster. Act smarter."
+Personality: Calm, professional, intelligent, alert, concise, reliable, security-focused, respectful. Never dramatic. Never verbose. Communicate like an experienced command-center AI.
+Critical Rules:
+1. ACCURACY FIRST: The human operator remains in command. You observe, analyze, summarize, and alert. Do NOT make autonomous high-stakes security decisions.
+2. NEVER FABRICATE: Never invent people, vehicles, license plates, alerts, or timestamps. Only reference actual surveillance telemetry below.
+3. UNCERTAINTY HANDLING: Distinguish between CONFIRMED DETECTION vs POSSIBLE EVENT. Never convert CV detections into claims about intent or character (e.g. use "Possible loitering detected", NOT "This person is suspicious").
+4. If information is unavailable, clearly state: "I don't have enough data from the current surveillance feed."
+5. Format responses with clean, structured bullet points or monospace cards. Keep responses compact and readable.
+
+LIVE SURVEILLANCE TELEMETRY:
+- Cameras: ${snapshot.camerasOnline}/${snapshot.camerasTotal} Online (${snapshot.camerasList.map((c) => `${c.id} [${c.status}]`).join(', ')})
+- Active Tracked People: ${snapshot.trackedPersonsCount}
+- Active Tracked Vehicles: ${snapshot.trackedVehiclesCount}
+- Active Alerts: ${snapshot.activeAlertsCount}
+- Active Critical Incidents: ${snapshot.criticalIncidentsCount}
+- AI Edge Inference: ${snapshot.aiHealth.status} (${snapshot.aiHealth.fps} FPS, ${snapshot.aiHealth.latencyMs} ms latency)
+- Recent Active Alerts: ${JSON.stringify(snapshot.recentAlerts.slice(0, 3))}
+- Recent Perimeter Events: ${JSON.stringify(snapshot.recentEvents.slice(0, 5))}`;
+
         for (const modelName of candidateModels) {
           try {
             // Race with 2500ms timeout to avoid UI freeze
@@ -275,8 +343,7 @@ chatRouter.post('/', async (req: Request, res: Response) => {
               model: modelName,
               contents: formattedHistory,
               config: {
-                systemInstruction:
-                  'You are Seemadrishti Help Bot, an advanced AI defense assistant for the SEEMADRISHTI border surveillance platform. You explain the 9-camera fleet, the 5 autonomous swarm agents (Sentinel, Pathfinder, Commander, Awareness-05, Lex Forensic), cross-camera Re-ID, stream diagnostics, threat heatmap, and legal forensic verification. Keep your answers concise, tactical, authoritative, and helpful.',
+                systemInstruction: systemPrompt,
               },
             });
 
@@ -297,7 +364,6 @@ chatRouter.post('/', async (req: Request, res: Response) => {
             break;
           } catch (modelErr: any) {
             console.warn(`[Chat] Model ${modelName} unavailable:`, modelErr.message?.slice(0, 100));
-            // Try next model or fall through to tactical engine
           }
         }
 
@@ -305,19 +371,18 @@ chatRouter.post('/', async (req: Request, res: Response) => {
           return;
         }
       } catch (geminiError: any) {
-        console.warn('[Chat] Gemini cloud service unavailable, switching to Tactical Knowledge Engine:', geminiError.message?.slice(0, 100));
+        console.warn('[Chat] Gemini cloud service unavailable, switching to Tactical Copilot Engine:', geminiError.message?.slice(0, 100));
       }
     }
 
     // High-availability Tactical Knowledge Engine fallback
-    const tacticalAnswer = generateContextualResponse(trimmedMsg);
-    await streamTextResponse(res, tacticalAnswer);
+    await streamTextResponse(res, copilotEvaluation.text, copilotEvaluation.action);
   } catch (error: any) {
     console.error('Chat API Fatal Error:', error);
-    // Even in fatal exceptions, provide an informative tactical response rather than crashing
     try {
-      const fallbackAnswer = generateContextualResponse('what is seemadrishti');
-      await streamTextResponse(res, fallbackAnswer);
+      const fallbackSnapshot = getLiveSurveillanceSnapshot();
+      const fallbackAnswer = generateTacticalCopilotResponse('status', fallbackSnapshot);
+      await streamTextResponse(res, fallbackAnswer.text);
     } catch {
       if (!res.headersSent) {
         res.status(500).json({ error: 'Internal Server Error' });

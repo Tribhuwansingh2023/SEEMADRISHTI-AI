@@ -37,6 +37,7 @@ export * from './auth/Auth3DCanvas';
 
 // Tactical AI Copilot & Assistance Chat
 export * from './chat/HelpBotWidget';
+export * from './chat/AiCopilotAvatar';
 
 // Geospatial Radar & Perimeter Mapping
 export * from './gis/TacticalRadarGisView';

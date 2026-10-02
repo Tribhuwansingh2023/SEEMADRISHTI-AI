@@ -361,6 +361,21 @@ function SeemadrishtiMainApp() {
     return unsubscribe;
   }, []);
 
+  // Subscribe to Copilot Actions (Camera switching, View navigation)
+  useEffect(() => {
+    const handleCopilotAction = (e: any) => {
+      const act = e.detail;
+      if (!act) return;
+      if (act.type === 'navigate_view' && act.target) {
+        setCurrentView(act.target);
+      } else if (act.type === 'open_camera') {
+        setCurrentView('matrix');
+      }
+    };
+    window.addEventListener('seemadrishti:action', handleCopilotAction);
+    return () => window.removeEventListener('seemadrishti:action', handleCopilotAction);
+  }, []);
+
   // Comprehensive Refresh handler across telemetry, alerts, cameras, and WebSocket gateway
   const handleRefresh = async () => {
     if (isRefreshing) return;

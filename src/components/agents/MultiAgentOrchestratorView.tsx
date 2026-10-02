@@ -47,6 +47,7 @@ import { audioAlertEngine } from '../../utils/audioAlert';
 
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
 import { Swarm3DTopology } from './Swarm3DTopology';
+import { AiCopilotAvatar } from '../chat/AiCopilotAvatar';
 
 export const CLIENT_PRESET_PARALLEL_JOBS: Record<string, ParallelOrchestrationJob> = {
   perimeter_sweep_9cam: {
@@ -1479,14 +1480,19 @@ export const MultiAgentOrchestratorView: React.FC = () => {
           }`}
         >
           <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
-            <div className="flex items-center gap-2">
-              <Bot size={16} className="text-cyan-400" />
-              <h3 className="text-xs font-black text-white uppercase tracking-widest">
-                SWARM COPILOT CONSOLE
-              </h3>
+            <div className="flex items-center gap-2.5">
+              <AiCopilotAvatar state={isCopilotThinking ? 'analyzing' : 'ready'} size="sm" />
+              <div>
+                <h3 className="text-xs font-black text-white uppercase tracking-widest leading-tight">
+                  SEEMADRISHTI AI COPILOT
+                </h3>
+                <span className="text-[9px] text-cyan-400 font-mono">
+                  SWARM CONSENSUS &amp; SITUATIONAL INTELLIGENCE
+                </span>
+              </div>
             </div>
-            <span className="text-[9px] text-slate-500 font-mono">
-              NATURAL LANGUAGE MULTI-AGENT REASONING
+            <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">
+              OPERATIONS ADVISORY MODE
             </span>
           </div>
 
