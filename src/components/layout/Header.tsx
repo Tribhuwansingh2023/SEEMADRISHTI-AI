@@ -181,7 +181,11 @@ export const Header: React.FC<HeaderProps> = ({
                 isDaylight ? 'text-cyan-700' : 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.6)]'
               } group-hover:rotate-45 transition-transform duration-300`}
             />
-            <span className="font-mono text-xs font-bold tracking-wider text-slate-900 dark:text-white">
+            <span
+              className={`font-mono text-xs font-bold tracking-wider ${
+                isDaylight ? 'text-slate-900' : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]'
+              }`}
+            >
               {clock24}
             </span>
           </div>
