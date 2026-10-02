@@ -15,7 +15,150 @@ import { OperatorProfileDropdown } from '../profile/OperatorProfileDropdown';
 import { webSocketService, WebSocketServiceState } from '../../services/websocketService';
 import { AiSystemStatusModal } from '../modals/AiSystemStatusModal';
 
+const VIEW_METADATA: Record<string, { title: string; subtitle: string; code: string; status: string }> = {
+  dashboard: {
+    title: 'TACTICAL COMMAND CONSOLE',
+    subtitle: 'AI Powered Video Analytics & Real-Time Threat Detection',
+    code: 'SEC-HQ-01',
+    status: 'LIVE EDGE',
+  },
+  'mission-control': {
+    title: 'MISSION CONTROL CENTER',
+    subtitle: 'Strategic Border Readiness & Global Surveillance Matrix',
+    code: 'HQ-CMD',
+    status: 'OPERATIONAL',
+  },
+  cameras: {
+    title: 'LIVE SURVEILLANCE GRID',
+    subtitle: '4K Ultra-Low Latency RTSP Edge Feeds',
+    code: 'CAM-9-FEED',
+    status: 'STREAMING',
+  },
+  'camera-fleet': {
+    title: 'CAMERA FLEET ROSTER',
+    subtitle: 'Multi-Sensor Health, Ping & Geo-Placement',
+    code: 'FLEET-09',
+    status: 'ALL ONLINE',
+  },
+  livestream: {
+    title: 'TACTICAL QUAD STREAM',
+    subtitle: 'Synchronized 4-Way Multi-Angle Surveillance',
+    code: 'QUAD-SYNC',
+    status: 'ACTIVE',
+  },
+  'cctv-footage': {
+    title: 'CCTV VIDEO STUDIO',
+    subtitle: 'Edge AI Inference, YOLOv8 Object Tracking & ANPR',
+    code: 'CCTV-SIM',
+    status: 'INFERENCE',
+  },
+  stitching: {
+    title: 'MULTI-CAM HANDOVER',
+    subtitle: 'Spatial Boundary Stitching & Seamless Cross-Camera Re-ID',
+    code: 'HANDOVER',
+    status: 'CORRELATED',
+  },
+  detections: {
+    title: 'NEURAL AI DETECTIONS',
+    subtitle: 'Deep Learning Vision Classifier & Continuous Audit Chain',
+    code: 'VISION-AI',
+    status: 'INSPECTING',
+  },
+  'target-journey': {
+    title: 'TARGET JOURNEY TRACKING',
+    subtitle: 'Multi-Camera Trajectory & Vector Interpolation',
+    code: 'TRAJECTORY',
+    status: 'TRACKING',
+  },
+  inspector: {
+    title: 'INCIDENT FORENSICS',
+    subtitle: 'Deep Frame Investigation & Threat Verification',
+    code: 'FORENSIC',
+    status: 'INVESTIGATING',
+  },
+  analytics: {
+    title: 'AI ANALYTICS ENGINE',
+    subtitle: '24-Hour Telemetry, Zone Density & Threat Aggregation',
+    code: 'TELEMETRY',
+    status: 'ONLINE',
+  },
+  'threat-map': {
+    title: 'DYNAMIC THREAT HEATMAP',
+    subtitle: 'Spatial Anomaly Density & Border Penetration Vectors',
+    code: 'HEATMAP',
+    status: 'CALIBRATED',
+  },
+  alerts: {
+    title: 'TACTICAL THREAT ALERTS',
+    subtitle: 'Verified Security Breaches & Active Interventions',
+    code: 'DEFCON',
+    status: 'MONITORING',
+  },
+  'evidence-queue': {
+    title: 'FORENSIC EVIDENCE VAULT',
+    subtitle: 'Cryptographically Signed Media & SHA-256 Chain of Custody',
+    code: 'VAULT-SEC',
+    status: 'ENCRYPTED',
+  },
+  'system-timeline': {
+    title: 'OPERATOR TIMELINE LOG',
+    subtitle: 'Immutable Incident Logbook & Intercept History',
+    code: 'AUDIT-LOG',
+    status: 'RECORDING',
+  },
+  agents: {
+    title: 'AUTONOMOUS AI SWARM',
+    subtitle: '5-Agent Distributed Neural Consensus & Countermeasures',
+    code: 'SWARM-5',
+    status: 'DELIBERATING',
+  },
+  'radar-map': {
+    title: 'TACTICAL RADAR GIS',
+    subtitle: '360° Geospatial Border Defense Layer',
+    code: 'GIS-RADAR',
+    status: 'SURVEILLANCE',
+  },
+  sandbox: {
+    title: 'DEFENSE SANDBOX LAB',
+    subtitle: 'Autonomous Intrusion Simulation & Threat War Games',
+    code: 'SIM-LAB',
+    status: 'SIMULATING',
+  },
+  calibration: {
+    title: 'ZONE CALIBRATION STUDIO',
+    subtitle: 'Restricted Exclusion Polygons & Tripwire Geofencing',
+    code: 'GEO-CALIB',
+    status: 'CALIBRATED',
+  },
+  diagnostics: {
+    title: 'STREAM DIAGNOSTICS',
+    subtitle: 'Zero-Packet-Loss Pipeline & GPU/NPU Latency Profiler',
+    code: 'HEALTH-NET',
+    status: 'DIAGNOSTIC',
+  },
+  settings: {
+    title: 'SYSTEM CONFIGURATION',
+    subtitle: 'Security Rules, Sensor Sensitivity & Alert Routing',
+    code: 'SYS-CONF',
+    status: 'CONFIG',
+  },
+  users: {
+    title: 'OPERATOR ACCESS CONTROL',
+    subtitle: 'RBAC Authorization, Crypto Passkeys & Session Audit',
+    code: 'IAM-SEC',
+    status: 'RBAC ACTIVE',
+  },
+};
+
+const DEFAULT_VIEW_META = {
+  title: 'TACTICAL COMMAND CONSOLE',
+  subtitle: 'AI Powered Video Analytics & Real-Time Threat Detection',
+  code: 'SEC-HQ-01',
+  status: 'LIVE EDGE',
+};
+
 interface HeaderProps {
+  currentView?: string;
   onToggleSidebarMobile: () => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
@@ -27,6 +170,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  currentView = 'dashboard',
   onToggleSidebarMobile,
   onRefresh,
   isRefreshing = false,
@@ -36,6 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAlerts,
   onOpenSwarmHelp,
 }) => {
+  const meta = VIEW_METADATA[currentView] || DEFAULT_VIEW_META;
   const { theme, toggleTheme, isDaylight } = useTheme();
   const { user, logout, setPortal, setIsProfileModalOpen } = useAuth();
   const { lockNow } = useSecurity();
@@ -141,30 +286,46 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col justify-center min-w-0">
+            {/* Top Row: Contextual Module Heading + Live Edge Badge + Tactical Callout */}
+            <div className="flex items-center gap-2 flex-wrap">
               <h1
                 id="dashboard-title-heading"
-                className={`text-base sm:text-lg font-black tracking-wider uppercase font-mono leading-none ${
+                className={`text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase font-mono leading-none ${
                   isDaylight
                     ? 'text-slate-900'
                     : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]'
                 }`}
               >
-                SEEMADRISHTI
+                {meta.title}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
-                TACTICAL COMMAND
-              </span>
+
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 tracking-widest uppercase shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
+                  {meta.status}
+                </span>
+
+                <span
+                  className={`hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider border ${
+                    isDaylight
+                      ? 'bg-slate-200 text-slate-700 border-slate-300'
+                      : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]'
+                  }`}
+                >
+                  {meta.code}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 mt-1 leading-tight">
+
+            {/* Bottom Row: Dynamic Mission Subtitle & Motto */}
+            <div className="flex items-center gap-2 mt-1 leading-tight flex-wrap">
               <span
-                className={`text-[11px] font-semibold ${
+                className={`text-[11px] font-medium ${
                   isDaylight ? 'text-slate-600' : 'text-slate-300'
                 }`}
               >
-                AI Powered Defense &amp; Security Surveillance System
+                {meta.subtitle}
               </span>
               <span
                 className={`hidden md:inline ${
@@ -173,7 +334,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 •
               </span>
-              <span className="hidden md:inline text-[10px] text-teal-400 font-mono">
+              <span className="hidden md:inline text-[10px] text-teal-400 font-mono font-semibold">
                 Smarter Eyes. Safer Tomorrow.
               </span>
             </div>

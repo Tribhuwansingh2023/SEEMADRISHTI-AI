@@ -644,6 +644,7 @@ function SeemadrishtiMainApp() {
 
         {/* 2. Top Header with Right Upper Corner Operator Profile */}
         <Header
+          currentView={currentView}
           onToggleSidebarMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
