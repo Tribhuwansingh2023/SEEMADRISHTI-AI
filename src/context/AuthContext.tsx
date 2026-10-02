@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const res = await getCurrentOperator();
         if (res.success && res.user) {
+          sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
           setUser(res.user);
           setToken(storedToken);
           // If already logged in, navigate straight to dashboard
@@ -82,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await loginOperator(username, password);
       if (res.success && res.user && res.token) {
+        sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
         setUser(res.user);
         setToken(res.token);
         setCurrentPortal('app');

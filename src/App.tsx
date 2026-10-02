@@ -926,15 +926,25 @@ function RootAppPortal() {
   const { setPortal, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [accessGranted, setAccessGranted] = React.useState<boolean>(() => {
-    return sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true';
-  });
 
   const path = location.pathname;
-  const isLanding = path === '/' || path === '' || path === '/landing' || path === '/home' ||
-                    path === '/features' || path === '/use-cases' || path === '/technology' || path === '/about';
-  const isAuthPage = path === '/login' || path === '/auth' || path === '/signin' ||
-                     path === '/signup' || path === '/register';
+  const isLanding =
+    path === '/' ||
+    path === '' ||
+    path === '/landing' ||
+    path === '/home' ||
+    path === '/features' ||
+    path === '/use-cases' ||
+    path === '/technology' ||
+    path === '/about';
+
+  const isAuthPage =
+    path === '/login' ||
+    path === '/auth' ||
+    path === '/signin' ||
+    path === '/signup' ||
+    path === '/register';
+
   const isSignupPage = path === '/signup' || path === '/register';
 
   const getInitialSection = () => {
@@ -945,21 +955,23 @@ function RootAppPortal() {
     return 'home';
   };
 
-  // Guard: Users can ONLY enter the portal via the "Get Access" button on the landing page
+  // If already authenticated and visiting an auth page or root, seamlessly transition to dashboard
   useEffect(() => {
     if (isLoading) return;
-
-    const hasAccess = sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true';
-    if (!hasAccess && !isLanding) {
-      navigate('/', { replace: true });
-      return;
+    if (isAuthenticated && isAuthPage) {
+      navigate('/dashboard', { replace: true });
     }
-  }, [isLoading, isLanding, navigate, path]);
+  }, [isLoading, isAuthenticated, isAuthPage, navigate]);
 
   // 1. Session initialising
   if (isLoading) return <LoadingScreen />;
 
-  // 2. Landing page — renders at /, /features, /use-cases, /technology, /about
+  // 2. Authenticated user viewing protected application (or dashboard routes)
+  if (isAuthenticated && !isLanding) {
+    return <SeemadrishtiMainApp />;
+  }
+
+  // 3. User explicitly on Landing page routes (/, /features, /use-cases, /technology, /about)
   if (isLanding) {
     return (
       <LandingPage
@@ -969,7 +981,6 @@ function RootAppPortal() {
         }}
         onEnterAuth={() => {
           sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
-          setAccessGranted(true);
           setPortal('auth');
           navigate('/login');
         }}
@@ -977,14 +988,12 @@ function RootAppPortal() {
     );
   }
 
-  // 3. Login / Signup pages — user ONLY gets this after clicking "Get Access"
+  // 4. User on Login / Signup / Auth routes (always accessible to unauthenticated users)
   if (isAuthPage) {
     return (
       <Auth3DView
         initialMode={isSignupPage ? 'signup' : 'login'}
         onNavigateLanding={() => {
-          sessionStorage.removeItem('seemadrishti_portal_access_granted');
-          setAccessGranted(false);
           setPortal('landing');
           navigate('/');
         }}
@@ -992,40 +1001,16 @@ function RootAppPortal() {
     );
   }
 
-  // 4. Protected app routes: strictly requires access to have been granted via "Get Access" button
-  const hasAccess = sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true' || accessGranted;
-  if (!hasAccess) {
-    return (
-      <LandingPage
-        initialSection={getInitialSection()}
-        onNavigateSection={(section) => {
-          navigate(section === 'home' ? '/' : `/${section}`);
-        }}
-        onEnterAuth={() => {
-          sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
-          setAccessGranted(true);
-          setPortal('auth');
-          navigate('/login');
-        }}
-      />
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Auth3DView
-        initialMode="login"
-        onNavigateLanding={() => {
-          sessionStorage.removeItem('seemadrishti_portal_access_granted');
-          setAccessGranted(false);
-          setPortal('landing');
-          navigate('/');
-        }}
-      />
-    );
-  }
-
-  return <SeemadrishtiMainApp />;
+  // 5. Unauthenticated user trying to access /dashboard or any protected route
+  return (
+    <Auth3DView
+      initialMode="login"
+      onNavigateLanding={() => {
+        setPortal('landing');
+        navigate('/');
+      }}
+    />
+  );
 }
 
 

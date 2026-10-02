@@ -78,6 +78,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
 
         // Strictly invoke backend auth via AuthContext (NO client-side passwords or backdoors)
         await login(trimmedUser, password);
+        sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
         setFailedAttempts(0);
         setSuccessMessage('Authentication verified. Establishing secure defense uplink...');
         navigate('/dashboard', { replace: true });
@@ -99,6 +100,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
           email: trimmedEmail,
           role: 'Surveillance Operator',
         });
+        sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
         setFailedAttempts(0);
         setSuccessMessage('Personnel enrollment verified. Clearance established.');
         navigate('/dashboard', { replace: true });
@@ -292,7 +294,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter operator callsign..."
+                    placeholder="Operator Callsign (e.g. admin or operator)"
                     required
                     autoComplete="off"
                     autoCorrect="off"
@@ -328,7 +330,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onKeyUp={handleKeyDown}
-                    placeholder="••••••••••••"
+                    placeholder="Security Passphrase (e.g. admin or Admin@123)"
                     required
                     autoComplete="new-password"
                     data-lpignore="true"

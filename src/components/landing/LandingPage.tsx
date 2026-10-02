@@ -191,12 +191,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </nav>
 
-          {/* Right: Primary "Get Access" CTA Button */}
-          <div className="flex items-center gap-4">
+          {/* Right: Primary "Sign In" & "Get Access" CTA Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              id="landing-navbar-signin"
+              onClick={onEnterAuth}
+              className="px-4 py-2 rounded-full border border-cyan-400/40 hover:border-cyan-300 text-cyan-300 hover:text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer hover:bg-cyan-500/10 shadow-xs active:scale-95"
+            >
+              Sign In
+            </button>
             <button
               id="landing-navbar-get-access"
               onClick={onEnterAuth}
-              className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#00E599] via-[#00f0aa] to-[#00C48C] hover:from-[#15f5a8] hover:to-[#05d99b] text-black font-mono text-xs font-black tracking-wider uppercase transition-all duration-200 cursor-pointer shadow-[0_0_25px_rgba(0,229,153,0.45)] hover:shadow-[0_0_35px_rgba(0,229,153,0.65)] hover:scale-105 active:scale-95"
+              className="flex items-center gap-2.5 px-5 py-2 rounded-full bg-gradient-to-r from-[#00E599] via-[#00f0aa] to-[#00C48C] hover:from-[#15f5a8] hover:to-[#05d99b] text-black font-mono text-xs font-black tracking-wider uppercase transition-all duration-200 cursor-pointer shadow-[0_0_25px_rgba(0,229,153,0.45)] hover:shadow-[0_0_35px_rgba(0,229,153,0.65)] hover:scale-105 active:scale-95"
             >
               <span>Get Access</span>
               <ArrowRight size={14} className="stroke-[3]" />
@@ -208,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="md:hidden flex items-center justify-around border-t border-slate-800/80 bg-[#040817]/95 px-2 py-2 text-[11px] font-mono">
           <button
             onClick={() => handleSelectTab('home')}
-            className={`py-1.5 px-3 rounded-lg transition-all ${
+            className={`py-1.5 px-2.5 rounded-lg transition-all ${
               activeTab === 'home' ? 'text-[#00E599] font-bold bg-[#00E599]/15' : 'text-slate-400'
             }`}
           >
@@ -216,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
           <button
             onClick={() => handleSelectTab('features')}
-            className={`py-1.5 px-3 rounded-lg transition-all ${
+            className={`py-1.5 px-2.5 rounded-lg transition-all ${
               activeTab === 'features' ? 'text-[#00E599] font-bold bg-[#00E599]/15' : 'text-slate-400'
             }`}
           >
@@ -224,7 +231,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
           <button
             onClick={() => handleSelectTab('use-cases')}
-            className={`py-1.5 px-3 rounded-lg transition-all ${
+            className={`py-1.5 px-2 rounded-lg transition-all ${
               activeTab === 'use-cases' ? 'text-[#00E599] font-bold bg-[#00E599]/15' : 'text-slate-400'
             }`}
           >
@@ -232,19 +239,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </button>
           <button
             onClick={() => handleSelectTab('technology')}
-            className={`py-1.5 px-3 rounded-lg transition-all ${
+            className={`py-1.5 px-2 rounded-lg transition-all ${
               activeTab === 'technology' ? 'text-[#00E599] font-bold bg-[#00E599]/15' : 'text-slate-400'
             }`}
           >
-            Technology
+            Tech
           </button>
           <button
             onClick={() => handleSelectTab('about')}
-            className={`py-1.5 px-3 rounded-lg transition-all ${
+            className={`py-1.5 px-2 rounded-lg transition-all ${
               activeTab === 'about' ? 'text-[#00E599] font-bold bg-[#00E599]/15' : 'text-slate-400'
             }`}
           >
             About
+          </button>
+          <button
+            onClick={onEnterAuth}
+            className="py-1.5 px-2.5 rounded-lg text-cyan-300 font-bold bg-cyan-500/15 border border-cyan-400/40"
+          >
+            Sign In
           </button>
         </div>
       </header>
