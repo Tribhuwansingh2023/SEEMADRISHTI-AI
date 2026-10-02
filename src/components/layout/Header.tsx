@@ -14,7 +14,6 @@ import { useSecurity } from '../../context/SecurityContext';
 import { OperatorProfileDropdown } from '../profile/OperatorProfileDropdown';
 import { webSocketService, WebSocketServiceState } from '../../services/websocketService';
 import { AiSystemStatusModal } from '../modals/AiSystemStatusModal';
-import { SeemadrishtiLogo } from './SeemadrishtiLogo';
 
 interface HeaderProps {
   onToggleSidebarMobile: () => void;
@@ -142,23 +141,42 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <SeemadrishtiLogo size={32} className="hidden xs:inline-flex shrink-0" />
           <div className="flex flex-col justify-center">
-            <h1
-              id="dashboard-title-heading"
-              className="text-base sm:text-lg font-black tracking-wider text-white uppercase font-mono leading-none"
-            >
-              SEEMADRISHTI
-            </h1>
-          </div>
-
-          <div className="hidden lg:flex flex-col pl-4 border-l border-slate-700/60 leading-tight">
-            <span className="text-[11px] font-semibold text-slate-300">
-              AI Powered Defense &amp; Security Surveillance System
-            </span>
-            <span className="text-[10px] text-teal-400 font-mono">
-              Smarter Eyes. Safer Tomorrow.
-            </span>
+            <div className="flex items-center gap-2">
+              <h1
+                id="dashboard-title-heading"
+                className={`text-base sm:text-lg font-black tracking-wider uppercase font-mono leading-none ${
+                  isDaylight
+                    ? 'text-slate-900'
+                    : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]'
+                }`}
+              >
+                SEEMADRISHTI
+              </h1>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
+                TACTICAL COMMAND
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-1 leading-tight">
+              <span
+                className={`text-[11px] font-semibold ${
+                  isDaylight ? 'text-slate-600' : 'text-slate-300'
+                }`}
+              >
+                AI Powered Defense &amp; Security Surveillance System
+              </span>
+              <span
+                className={`hidden md:inline ${
+                  isDaylight ? 'text-slate-400' : 'text-slate-600'
+                } font-mono text-[10px]`}
+              >
+                •
+              </span>
+              <span className="hidden md:inline text-[10px] text-teal-400 font-mono">
+                Smarter Eyes. Safer Tomorrow.
+              </span>
+            </div>
           </div>
         </div>
       </div>
