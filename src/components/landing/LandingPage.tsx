@@ -101,25 +101,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* 1. TOP NAVBAR (Sticky Glassmorphic Header - Tactical Defense Theme)        */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#040817]/90 border-b border-slate-800/80 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 h-18 flex items-center justify-between">
           {/* Left: Brand Logo & Typography */}
-          <button
-            onClick={() => handleSelectTab('home')}
-            className="flex items-center gap-3 cursor-pointer group text-left focus:outline-none"
-          >
-            <SeemadrishtiLogo size={36} className="group-hover:scale-105 transition-transform" />
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-black tracking-wider text-white uppercase font-mono leading-none">
-                SEEMADRISHTI
-              </span>
-              <span className="text-[8px] font-mono tracking-widest text-[#00E599] font-bold uppercase mt-1">
-                DEFENSE | SURVEILLANCE | SECURITY
-              </span>
-            </div>
-          </button>
+          <div className="flex-1 flex items-center">
+            <button
+              onClick={() => handleSelectTab('home')}
+              className="flex items-center gap-3 cursor-pointer group text-left focus:outline-none"
+            >
+              <SeemadrishtiLogo size={36} className="group-hover:scale-105 transition-transform" />
+              <div className="flex flex-col">
+                <span className="text-lg sm:text-xl font-black tracking-wider text-white uppercase font-mono leading-none">
+                  SEEMADRISHTI
+                </span>
+                <span className="text-[8px] font-mono tracking-widest text-[#00E599] font-bold uppercase mt-1">
+                  DEFENSE | SURVEILLANCE | SECURITY
+                </span>
+              </div>
+            </button>
+          </div>
 
           {/* Center: Navigation Links (Home, Features, Use Cases, Technology, About) */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-mono font-semibold tracking-wide">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-mono font-semibold tracking-wide shrink-0">
             <button
               onClick={() => handleSelectTab('home')}
               className={`transition-all duration-200 cursor-pointer relative py-2 focus:outline-none ${
@@ -192,7 +194,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </nav>
 
           {/* Right: Primary "Get Access" CTA Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex-1 flex items-center justify-end gap-3">
             <button
               id="landing-navbar-get-access"
               onClick={onEnterAuth}
@@ -298,7 +300,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* 4. FOOTER (Matching Unified Dark Theme & Border Hierarchy)                */}
       {/* ========================================================================= */}
       <footer className="py-12 relative z-10 border-t border-slate-800/80 text-slate-400 text-xs font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800/60">
             {/* Logo */}
             <div className="flex items-center gap-3">
