@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, User, Loader2, Sparkles, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
+import { X, Send, User, Loader2, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
 import { AiCopilotAvatar, CopilotVisualState } from './AiCopilotAvatar';
@@ -22,17 +22,6 @@ export function HelpBotWidget() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copilotState, setCopilotState] = useState<CopilotVisualState>('ready');
-  const [statusTelemetry, setStatusTelemetry] = useState<{
-    camerasOnline: number;
-    camerasTotal: number;
-    latencyMs: number;
-    fps: number;
-  }>({
-    camerasOnline: 9,
-    camerasTotal: 9,
-    latencyMs: 18,
-    fps: 30,
-  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,12 +32,6 @@ export function HelpBotWidget() {
       if (res.ok) {
         const data = await res.json();
         if (data.snapshot) {
-          setStatusTelemetry({
-            camerasOnline: data.snapshot.camerasOnline,
-            camerasTotal: data.snapshot.camerasTotal,
-            latencyMs: data.snapshot.aiHealth?.latencyMs || 18,
-            fps: data.snapshot.aiHealth?.fps || 30,
-          });
           if (data.snapshot.aiHealth?.status === 'DEGRADED') {
             setCopilotState('degraded');
           } else if (data.snapshot.camerasOnline === 0) {
@@ -258,21 +241,6 @@ export function HelpBotWidget() {
               </div>
             </div>
 
-            {/* Sub-Header Live Telemetry Bar */}
-            <div className="px-3.5 py-1.5 bg-[#010309] border-b border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-slate-400 select-none">
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {statusTelemetry.camerasOnline}/{statusTelemetry.camerasTotal} CAMS ONLINE
-                </span>
-                <span>•</span>
-                <span>LATENCY: {statusTelemetry.latencyMs}ms</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
-                <Sparkles size={10} />
-                <span>YOLOv8 + BYTETRACK</span>
-              </div>
-            </div>
 
             {/* Message Area */}
             <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#020612]/75 font-mono text-xs">
