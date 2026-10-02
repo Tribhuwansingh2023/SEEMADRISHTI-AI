@@ -175,19 +175,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 SEEMADRISHTI
               </h1>
-              <p
-                className={`text-[8px] font-mono tracking-[0.16em] font-bold uppercase mt-1 leading-none flex items-center gap-1.5 ${
-                  isDaylight
-                    ? 'text-cyan-700'
-                    : 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]'
-                }`}
-              >
-                <span>DEFENSE</span>
-                <span className="text-cyan-500/60 font-normal">|</span>
-                <span>SURVEILLANCE</span>
-                <span className="text-cyan-500/60 font-normal">|</span>
-                <span>SECURITY</span>
-              </p>
             </div>
           </div>
 

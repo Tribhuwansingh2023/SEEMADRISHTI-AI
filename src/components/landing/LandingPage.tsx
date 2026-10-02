@@ -191,15 +191,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </nav>
 
-          {/* Right: Primary "Sign In" & "Get Access" CTA Buttons */}
+          {/* Right: Primary "Get Access" CTA Button */}
           <div className="flex items-center gap-3">
-            <button
-              id="landing-navbar-signin"
-              onClick={onEnterAuth}
-              className="px-4 py-2 rounded-full border border-cyan-400/40 hover:border-cyan-300 text-cyan-300 hover:text-white font-mono text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer hover:bg-cyan-500/10 shadow-xs active:scale-95"
-            >
-              Sign In
-            </button>
             <button
               id="landing-navbar-get-access"
               onClick={onEnterAuth}
@@ -252,12 +245,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             }`}
           >
             About
-          </button>
-          <button
-            onClick={onEnterAuth}
-            className="py-1.5 px-2.5 rounded-lg text-cyan-300 font-bold bg-cyan-500/15 border border-cyan-400/40"
-          >
-            Sign In
           </button>
         </div>
       </header>

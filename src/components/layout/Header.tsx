@@ -143,20 +143,13 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-3">
           <SeemadrishtiLogo size={32} className="hidden xs:inline-flex shrink-0" />
-          <div className="flex flex-col">
+          <div className="flex flex-col justify-center">
             <h1
               id="dashboard-title-heading"
               className="text-base sm:text-lg font-black tracking-wider text-white uppercase font-mono leading-none"
             >
               SEEMADRISHTI
             </h1>
-            <p className="text-[8px] font-mono tracking-[0.16em] text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)] font-bold uppercase mt-1 leading-none flex items-center gap-1.5">
-              <span>DEFENSE</span>
-              <span className="text-cyan-500/60 font-normal">|</span>
-              <span>SURVEILLANCE</span>
-              <span className="text-cyan-500/60 font-normal">|</span>
-              <span>SECURITY</span>
-            </p>
           </div>
 
           <div className="hidden lg:flex flex-col pl-4 border-l border-slate-700/60 leading-tight">
