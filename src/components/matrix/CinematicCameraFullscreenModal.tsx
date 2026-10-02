@@ -224,7 +224,7 @@ export const CinematicCameraFullscreenModal: React.FC<CinematicCameraFullscreenM
         resolution: camera.resolution || '4K UHD',
         fps: camera.fps || 60,
         bitrate: camera.bitrate || '8.2 Mbps',
-        aiModels: camera.aiModels || ['YOLOv8-Border'],
+        aiModels: camera.aiModels || ['Tactical-Vision-AI'],
         activeDetections: 2,
         dangerZones: [],
       });

@@ -27,54 +27,12 @@ interface AuthContextType {
   register: (payload: RegisterPayload) => Promise<UserProfile>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<UserProfile>;
   logout: (onLoggedOut?: () => void) => Promise<void>;
-  enterDemoMode: (role?: string) => Promise<UserProfile>;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Quick 1-click evaluation accounts
-export const DEMO_OPERATOR_PRESETS = [
-  {
-    username: 'admin',
-    password: 'Admin@123',
-    name: 'Major Vikram Sen',
-    role: 'Commander',
-    code: 'LVL-4 COMMAND',
-    sector: 'All Border Sectors (HQ)',
-    color: '#ec4899',
-    tag: 'COMMAND',
-  },
-  {
-    username: 'operator',
-    password: 'Operator@123',
-    name: 'Officer Rajesh Kumar',
-    role: 'Surveillance Operator',
-    code: 'LVL-3 OPERATOR',
-    sector: 'Gate Alpha & Checkpoint 1',
-    color: '#00f0ff',
-    tag: 'SURVEILLANCE',
-  },
-  {
-    username: 'patrol',
-    password: 'Patrol@123',
-    name: 'Havaldar Amit Patel',
-    role: 'Patrol Officer',
-    code: 'LVL-2 PATROL',
-    sector: 'East Perimeter Border Fence',
-    color: '#10b981',
-    tag: 'PATROL',
-  },
-  {
-    username: 'analyst',
-    password: 'Analyst@123',
-    name: 'Dr. Ananya Sharma',
-    role: 'AI Analyst',
-    code: 'LVL-3 ANALYST',
-    sector: 'Neural Net Model Training',
-    color: '#a855f7',
-    tag: 'AI ANALYST',
-  },
-];
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -172,21 +130,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore network errors on logout
     } finally {
+      sessionStorage.removeItem('seemadrishti_portal_access_granted');
       setUser(null);
       setToken(null);
       setAuthToken(null);
-      setCurrentPortal('auth');
+      setCurrentPortal('landing');
       setIsLoading(false);
       // Call the optional callback (e.g. to reset PIN lock and navigate)
       onLoggedOut?.();
     }
   }, []);
 
-  // Quick 1-click evaluation preset handler
-  const enterDemoMode = useCallback(async (role: string = 'Commander'): Promise<UserProfile> => {
-    const preset = DEMO_OPERATOR_PRESETS.find((p) => p.role.toLowerCase() === role.toLowerCase()) || DEMO_OPERATOR_PRESETS[0];
-    return login(preset.username, preset.password);
-  }, [login]);
+
 
   const value: AuthContextType = {
     user,
@@ -201,7 +156,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     updateProfile,
     logout,
-    enterDemoMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

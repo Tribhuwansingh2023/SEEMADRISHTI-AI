@@ -1361,7 +1361,7 @@ export const QuadLiveStreamView: React.FC<QuadLiveStreamViewProps> = ({
                       </div>
 
                       <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400">
-                        <span>MODEL: YOLOv8x + BYTETRACK</span>
+                        <span>ENGINE: DEFENSE AUTONOMOUS VISION</span>
                         <button
                           onClick={() => {
                             setActiveCamActivityModal(null);
@@ -1776,15 +1776,15 @@ export const QuadLiveStreamView: React.FC<QuadLiveStreamViewProps> = ({
           <div className="w-2 h-2 rounded-full bg-purple-400" />
           <div>
             <p className="text-slate-500 uppercase text-[9px] font-bold">Inference Latency</p>
-            <p className="text-purple-300 font-bold">8.4 ms (TensorRT)</p>
+            <p className="text-purple-300 font-bold">8.4 ms (Ultra-Low Latency)</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.04]">
           <div className="w-2 h-2 rounded-full bg-amber-400" />
           <div>
-            <p className="text-slate-500 uppercase text-[9px] font-bold">Active Models</p>
-            <p className="text-amber-400 font-bold">7 Neural Nets Active</p>
+            <p className="text-slate-500 uppercase text-[9px] font-bold">Active Sensors</p>
+            <p className="text-amber-400 font-bold">7 Tactical Sensors Active</p>
           </div>
         </div>
       </div>

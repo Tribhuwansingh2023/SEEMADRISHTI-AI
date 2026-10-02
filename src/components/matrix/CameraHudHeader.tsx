@@ -132,11 +132,11 @@ export const CameraHudHeader: React.FC<CameraHudHeaderProps> = ({
             <span>{camera.src?.includes('.mp4') && !isWebcamActive ? 'PLAYBACK (MP4)' : isWebcamActive ? 'LIVE WEBCAM' : playbackMode}</span>
           </button>
 
-          {/* Explicit Webcam / Demo Toggle */}
+          {/* Explicit Webcam / Playback Toggle */}
           {onToggleWebcam && (
             <button
               onClick={onToggleWebcam}
-              title={isWebcamActive ? "Switch back to MP4 Demo Fixture" : "Switch to Live Hardware Webcam"}
+              title={isWebcamActive ? "Switch back to MP4 Playback Fixture" : "Switch to Live Hardware Webcam"}
               className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border transition-all cursor-pointer flex items-center gap-1 ${
                 isWebcamActive
                   ? 'bg-rose-950/90 text-rose-300 border-rose-500/60 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse'

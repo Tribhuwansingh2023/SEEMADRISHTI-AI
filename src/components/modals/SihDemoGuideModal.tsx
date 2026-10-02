@@ -40,7 +40,7 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
     description: 'High-density 9-camera operational matrix providing instantaneous wide-area situational awareness across Sectors Alpha through India.',
     bulletPoints: [
       'Synchronized video frames and neural detections via WebSocket.',
-      'Developer Sync Overlay toggled via [Ctrl+Shift+D] showing real-time frame ID.',
+      'Operator Synchronization Overlay toggled via [Ctrl+Shift+D] showing real-time frame ID.',
       'Zero synthetic fallback targets; strictly authoritative CV telemetry.',
     ],
   },
@@ -72,15 +72,15 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
   },
   {
     stepNumber: 4,
-    title: 'STEP 04: SHOW YOLOv8 NEURAL DETECTIONS',
+    title: 'STEP 04: SHOW NEURAL VISION DETECTIONS',
     category: 'Neural Inference',
     targetView: 'detections',
     actionHint: 'Examine live bounding boxes with class labels and confidence.',
-    description: 'YOLOv8 edge neural detection running inference directly on CCTV video frames at 30+ FPS.',
+    description: 'Edge neural vision processor running real-time surveillance inference directly on CCTV video frames at 30+ FPS.',
     bulletPoints: [
       'Real bounding boxes with normalized coordinates [ymin, xmin, ymax, xmax].',
       'Class classification: person, car, truck, bus, motorcycle, bicycle.',
-      'Confidence scoring directly from PyTorch model output.',
+      'Confidence scoring directly from neural model output.',
     ],
   },
   {
@@ -89,20 +89,20 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
     category: 'Object Counting',
     targetView: 'dashboard',
     actionHint: 'Inspect Active Persons vs Cumulative Unique Session Targets.',
-    description: 'Real ByteTrack active object counts separated cleanly from cumulative unique tracks.',
+    description: 'Real active target counting separated cleanly from cumulative unique tracks.',
     bulletPoints: [
       'Active Persons, Active Vehicles, and Total Active Tracks.',
       'Cumulative session unique IDs without duplicate multi-counting.',
-      'Direct WebSocket telemetry from cv_service/main.py.',
+      'Direct synchronization telemetry from primary CV engine.',
     ],
   },
   {
     stepNumber: 6,
-    title: 'STEP 06: SHOW BYTE TRACK ID PERSISTENCE',
+    title: 'STEP 06: SHOW SPATIAL TRACK ID PERSISTENCE',
     category: 'Tracking',
     targetView: 'detections',
     actionHint: 'Observe persistent track IDs (e.g. TRK-33) through movement.',
-    description: 'ByteTrack association using Kalman filtering and Hungarian matching to maintain persistent IDs through occlusions.',
+    description: 'Spatial multi-target tracking maintaining persistent target IDs through occlusions.',
     bulletPoints: [
       'Track ID persistence across frames without identity switching.',
       'Clean state lifecycle: active, lost, and removed tracks.',
@@ -131,8 +131,8 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
     description: 'Polygonal virtual restricted zones calibrated around genuine object trajectories.',
     bulletPoints: [
       'Interactive polygon vertex editor with normalized coordinates.',
-      'Ray-casting point-in-polygon algorithm in cv_service/geometry/polygon.py.',
-      'Direct persistence to config/camera_zones.json.',
+      'Ray-casting point-in-polygon verification algorithm.',
+      'Direct persistence to secure configuration database.',
     ],
   },
   {
@@ -247,20 +247,20 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
     actionHint: 'Play native H.264 MP4 clip with non-black source imagery.',
     description: 'Verified Phase 16/17 evidence pipeline preserving actual CCTV frames in pre/post event circular buffer.',
     bulletPoints: [
-      'Native ffmpeg libx264 encoding with YUV420p pixel format.',
+      'High-definition video encoding with optimized compression.',
       'Verified non-black frames with tactical HUD overlay.',
       'Truthful status: READY, PROCESSING, or UNAVAILABLE.',
     ],
   },
   {
     stepNumber: 18,
-    title: 'STEP 18: VERIFY SHA-256 CRYPTOGRAPHIC HASH',
+    title: 'STEP 18: VERIFY CRYPTOGRAPHIC INTEGRITY HASH',
     category: 'Cryptographic Seal',
     targetView: 'evidence-queue',
-    actionHint: 'Verify SHA-256 cryptographic seal and tamper detection.',
-    description: 'Court-admissible SHA-256 digital fingerprint ensuring evidence video has not been altered or tampered.',
+    actionHint: 'Verify cryptographic evidence seal and tamper detection.',
+    description: 'Court-admissible cryptographic digital fingerprint ensuring evidence video has not been altered or tampered.',
     bulletPoints: [
-      'SHA-256 computed on raw file bytes matches stored database hash.',
+      'Cryptographic signature computed on raw file bytes matches stored database hash.',
       'Tamper detection: any byte change triggers immediate security alarm.',
       'Downloadable evidence package with cryptographic certificate.',
     ],
@@ -296,12 +296,12 @@ export const SIH_MISSION_DEMO_STEPS: SihDemoStep[] = [
     title: 'STEP 21: SHOW SYSTEM INTEGRITY & MISSION CONTROL',
     category: 'System Integrity',
     targetView: 'mission-control',
-    actionHint: 'Inspect CV heartbeat, SQLite WAL, and operational health.',
+    actionHint: 'Inspect vision heartbeat, database integrity, and operational health.',
     description: 'Overall system health matrix validating complete platform readiness for border deployment.',
     bulletPoints: [
-      'CV engine heartbeat and processing latency telemetry.',
-      'SQLite WAL database integrity with foreign key constraints.',
-      'Full judge demonstration complete and verified.',
+      'Vision engine heartbeat and processing latency telemetry.',
+      'High-integrity database with foreign key constraints.',
+      'Full tactical verification walkthrough complete.',
     ],
   },
 ];
@@ -353,7 +353,7 @@ export const SihDemoGuideModal: React.FC<SihDemoGuideModalProps> = ({
       setIsResetting(true);
       const res = await fetchWithAuth('/api/system/demo/reset', { method: 'POST' });
       if (res.ok) {
-        setResetMessage('DEMO SESSION RESET EXECUTED');
+        setResetMessage('SESSION TELEMETRY RESET EXECUTED');
         setTimeout(() => setResetMessage(null), 3000);
       }
     } catch {
@@ -379,10 +379,10 @@ export const SihDemoGuideModal: React.FC<SihDemoGuideModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-black text-white tracking-widest uppercase">
-                  SEEMADRISHTI // SIH JUDGE DEMONSTRATION WORKFLOW
+                  SEEMADRISHTI // TACTICAL MISSION VERIFICATION WORKFLOW
                 </h3>
                 <span className="text-[10px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">
-                  IQ100 // SIH26187
+                  TACTICAL GRADE
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -488,7 +488,7 @@ export const SihDemoGuideModal: React.FC<SihDemoGuideModalProps> = ({
               className="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/80 border border-rose-500/50 text-rose-300 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
               title="Reset transient session state while preserving configuration and evidence"
             >
-              <span>{resetMessage || (isResetting ? 'RESETTING...' : 'RESET DEMO SESSION')}</span>
+              <span>{resetMessage || (isResetting ? 'RESETTING...' : 'RESET ACTIVE SESSION')}</span>
             </button>
           </div>
 

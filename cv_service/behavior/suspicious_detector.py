@@ -97,6 +97,7 @@ class SuspiciousActivityDetector:
             else:
                 bx1, by1, bx2, by2 = 0.0, 0.0, 0.0, 0.0
             
+            bbox = [bx1, by1, bx2, by2]
             cx = (bx1 + bx2) / 2.0
             cy = (by1 + by2) / 2.0
             width = max(1.0, bx2 - bx1)

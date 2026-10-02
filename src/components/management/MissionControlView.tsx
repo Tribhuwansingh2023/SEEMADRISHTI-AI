@@ -25,13 +25,13 @@ import { ViewMode } from '../../types';
 interface MissionControlViewProps {
   onNavigate: (view: ViewMode) => void;
   onOpenReports: () => void;
-  onOpenDemo: () => void;
+
 }
 
 export const MissionControlView: React.FC<MissionControlViewProps> = ({
   onNavigate,
   onOpenReports,
-  onOpenDemo,
+
 }) => {
   const { isDaylight } = useTheme();
   const [health, setHealth] = useState<SystemHealthResponse | null>(null);
@@ -153,13 +153,7 @@ export const MissionControlView: React.FC<MissionControlViewProps> = ({
               <FileSpreadsheet className="w-3.5 h-3.5" />
               TACTICAL REPORT
             </button>
-            <button
-              onClick={onOpenDemo}
-              className="px-3.5 py-1.5 text-xs font-mono font-semibold rounded bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 text-amber-300 hover:from-amber-500/30 hover:to-orange-500/30 flex items-center gap-2 transition shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              SIH MISSION DEMO (21-STEP)
-            </button>
+
           </div>
         </div>
 
@@ -182,18 +176,18 @@ export const MissionControlView: React.FC<MissionControlViewProps> = ({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2 text-cyan-400">
               <Cpu className="w-5 h-5" />
-              <span className="font-mono text-xs font-semibold tracking-wider">CV NEURAL ENGINE</span>
+              <span className="font-mono text-xs font-semibold tracking-wider">TACTICAL VISION ENGINE</span>
             </div>
             {getStatusBadge(health?.services?.cv?.status || 'STANDBY')}
           </div>
           <div className="space-y-2 text-xs font-mono text-slate-300">
             <div className="flex justify-between border-b border-slate-800/80 pb-1">
               <span className="text-slate-400">Model:</span>
-              <span className="text-cyan-300">YOLOv8n Edge (640x640)</span>
+              <span className="text-cyan-300">Defense Spatial Vision (HD)</span>
             </div>
             <div className="flex justify-between border-b border-slate-800/80 pb-1">
               <span className="text-slate-400">Tracker:</span>
-              <span className="text-slate-200">ByteTrack (Kalman)</span>
+              <span className="text-slate-200">Spatial Predictor</span>
             </div>
             <div className="flex justify-between border-b border-slate-800/80 pb-1">
               <span className="text-slate-400">Processing Latency:</span>
@@ -256,14 +250,14 @@ export const MissionControlView: React.FC<MissionControlViewProps> = ({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2 text-amber-400">
               <Database className="w-5 h-5" />
-              <span className="font-mono text-xs font-semibold tracking-wider">SQLITE WAL DATABASE</span>
+              <span className="font-mono text-xs font-semibold tracking-wider">OPERATIONAL AUDIT VAULT</span>
             </div>
             {getStatusBadge(health?.services?.database?.status || 'OPERATIONAL')}
           </div>
           <div className="space-y-2 text-xs font-mono text-slate-300">
             <div className="flex justify-between border-b border-slate-800/80 pb-1">
-              <span className="text-slate-400">Journal Mode:</span>
-              <span className="text-amber-300">WAL (High Concurrency)</span>
+              <span className="text-slate-400">Security Mode:</span>
+              <span className="text-amber-300">High-Integrity Preservation</span>
             </div>
             <div className="flex justify-between border-b border-slate-800/80 pb-1">
               <span className="text-slate-400">Foreign Keys:</span>
@@ -274,8 +268,8 @@ export const MissionControlView: React.FC<MissionControlViewProps> = ({
               <span className="text-slate-200">{health?.services?.database?.totalRecords?.toLocaleString() || '120+'}</span>
             </div>
             <div className="flex justify-between pt-1">
-              <span className="text-slate-400">Storage Path:</span>
-              <span className="text-slate-300">data/seemadrishti.sqlite</span>
+              <span className="text-slate-400">Repository:</span>
+              <span className="text-slate-300">SECTOR VAULT REPOSITORY 01</span>
             </div>
           </div>
         </div>

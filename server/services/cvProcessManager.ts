@@ -214,7 +214,7 @@ export async function dispatchWebcamFrame(
     const result = (await res.json()) as FrameProcessingResult;
 
     // Broadcast live telemetry packets over WebSocket to all connected tactical dashboards
-    if (result && result.success) {
+    if (result && result.success && !(result as any).dropped) {
       // 1. Detections
       if (result.detections) {
         broadcastWebSocketMessage('detection', {

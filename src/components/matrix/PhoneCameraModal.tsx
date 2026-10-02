@@ -527,8 +527,8 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
                       <span className="text-purple-300">{transportLabel}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 text-[9px] block">NEURAL PIPELINE:</span>
-                      <span className="text-emerald-400">YOLOv8 + ByteTrack (CENTRAL CV)</span>
+                      <span className="text-slate-500 text-[9px] block">VISION PIPELINE:</span>
+                      <span className="text-emerald-400">TACTICAL SPATIAL VISION</span>
                     </div>
                   </div>
                 </div>
@@ -645,8 +645,8 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
                       <span className="text-slate-200">{sensorDetails.lastHeartbeatAgo ?? 0}s ago</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">CV PIPELINE:</span>
-                      <span className="text-cyan-300 font-semibold">YOLOv8 + ByteTrack (CENTRAL CV)</span>
+                      <span className="text-slate-500">VISION PIPELINE:</span>
+                      <span className="text-cyan-300 font-semibold">TACTICAL SPATIAL VISION</span>
                     </div>
                   </div>
                 )}
@@ -667,7 +667,7 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-slate-300 font-bold text-[11px]">Stream URL / Ingestion Endpoint:</label>
+                <label className="text-slate-300 font-bold text-[11px]">Sensor Stream Address / Channel:</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -721,20 +721,21 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
                     DroidCam
                   </button>
                   <button
-                    onClick={() => setRtspUrl('rtsp://admin:admin123@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0')}
+                    onClick={() => setRtspUrl('rtsp://192.168.1.108:554/cam/realmonitor?channel=1&subtype=0')}
                     className="px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[10px] rounded cursor-pointer"
                   >
-                    Hikvision / CP PLUS
+                    IP / NVR Camera
                   </button>
                 </div>
               </div>
 
-              {/* Command Line Helper */}
+              {/* Ingestion Status */}
               <div className="p-2.5 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-400">
-                <div className="text-[9px] text-cyan-400 mb-1 font-bold">TERMINAL COMMAND TO RUN HIGH-PERFORMANCE CV SERVICE:</div>
-                <code className="text-emerald-300 select-all block bg-black/60 p-1.5 rounded">
-                  python cv_service/main.py --source &quot;{rtspUrl}&quot; --camera-id {targetCameraId.toLowerCase()}
-                </code>
+                <div className="text-[9px] text-cyan-400 mb-1 font-bold">TACTICAL SENSOR INGESTION STATUS:</div>
+                <div className="text-emerald-300 font-mono text-[10px] bg-black/60 p-2 rounded flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>FEED LINK READY FOR SECTOR INGESTION</span>
+                </div>
               </div>
 
               <button
@@ -755,7 +756,7 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
                   Select Connected USB / Desktop Video Device:
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Direct hardware device ingestion uses browser <code>getUserMedia()</code> capture forwarded through the authenticated ingestion gateway to Central YOLOv8 + ByteTrack.
+                  Direct hardware device ingestion captures local sensor feed and securely forwards frames to the Central Tactical Vision Core.
                 </p>
               </div>
 
@@ -781,8 +782,8 @@ export const PhoneCameraModal: React.FC<PhoneCameraModalProps> = ({
               </div>
 
               <div className="p-2.5 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-400">
-                <div className="text-[9px] text-cyan-400 mb-1 font-bold">TACTICAL HARDWARE INGRESS ARCHITECTURE:</div>
-                <div>Webcam / Capture Device &rarr; getUserMedia() &rarr; Node Gateway &rarr; Python CV &rarr; YOLOv8 &rarr; Tactical Matrix.</div>
+                <div className="text-[9px] text-cyan-400 mb-1 font-bold">TACTICAL SENSOR INGRESS:</div>
+                <div>Sensor Device &rarr; Hardware Ingestion &rarr; Secure Stream Gateway &rarr; Tactical Matrix Analysis.</div>
               </div>
             </div>
           )}

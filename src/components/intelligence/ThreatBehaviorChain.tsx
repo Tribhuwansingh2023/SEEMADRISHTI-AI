@@ -118,7 +118,7 @@ function createFallbackChain(incidentId?: string, cameraId?: string, trackId?: n
       { factor: 'RESTRICTED FENCE SCALING', points: 35, description: 'Geofence Breach on Boundary Line' },
       { factor: 'PROLONGED DWELL ACCUMULATION', points: 30, description: '42.4s > 15s Baseline Threshold' },
       { factor: 'INWARD TRAJECTORY VECTOR', points: 20, description: 'Heading -38° Toward Asset Line Level 1' },
-      { factor: 'YOLOv8 OBJECT VERIFICATION', points: 13, description: '96.2% Human Detection Confidence' },
+      { factor: 'NEURAL OBJECT VERIFICATION', points: 13, description: '96.2% Human Detection Confidence' },
     ],
     incident_id: inc,
     created_at: new Date().toISOString(),
@@ -468,7 +468,7 @@ export const ThreatBehaviorChain: React.FC<ThreatBehaviorChainProps> = ({
                         </span>
                       )}
                       {ev.event_type === 'DETECTION' && (
-                        <span>Initial detection confirmed via YOLOv8 model</span>
+                        <span>Initial detection confirmed via Autonomous Vision Core</span>
                       )}
                     </div>
                   </div>

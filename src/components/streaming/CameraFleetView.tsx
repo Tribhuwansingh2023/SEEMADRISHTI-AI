@@ -275,7 +275,7 @@ export const CameraFleetView: React.FC<CameraFleetViewProps> = ({ onSelectCamera
                     disabled={actionInProgress !== null}
                     onClick={() => handleControl(cam.id, 'simulate_failure')}
                     className="py-1.5 px-2 rounded bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 text-amber-300 flex items-center justify-center gap-1 transition"
-                    title="Simulate signal loss for SIH demonstration"
+                    title="Simulate sector signal loss drill"
                   >
                     <Zap className="w-3 h-3 text-amber-400" />
                     SIM DROP

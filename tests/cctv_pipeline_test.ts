@@ -211,6 +211,7 @@ async function runCctvTests() {
   if (passed < results.length) {
     process.exit(1);
   }
+  process.exit(0);
 }
 
 runCctvTests().catch((err) => {

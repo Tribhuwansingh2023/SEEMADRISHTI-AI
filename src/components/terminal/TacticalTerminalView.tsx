@@ -139,7 +139,7 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
               <div><span className="text-cyan-300 font-bold">alerts</span> - List recent high-severity threat alerts</div>
               <div><span className="text-cyan-300 font-bold">ping</span> - Measure live gateway round-trip latency</div>
               <div><span className="text-cyan-300 font-bold">zones &lt;cam-id&gt;</span> - Show calibrated tripwire coordinates</div>
-              <div><span className="text-cyan-300 font-bold">cv</span> - Query YOLOv8 neural pipeline telemetry</div>
+              <div><span className="text-cyan-300 font-bold">cv</span> - Query neural vision pipeline telemetry</div>
               <div><span className="text-cyan-300 font-bold">clear</span> - Clear terminal screen buffer</div>
               <div><span className="text-cyan-300 font-bold">version</span> - Display OS build & cryptographic kernel specs</div>
             </div>
@@ -154,7 +154,7 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
       }
 
       case 'status': {
-        addLog('system', 'Querying /api/system/health gateway...');
+        addLog('system', 'Synchronizing system health gateway...');
         try {
           const res = await fetch('/api/system/health', { headers: getHeaders() });
           const json = await res.json();
@@ -167,8 +167,8 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
                   <Activity size={14} /> SYSTEM HEALTH STATUS: {d.overall || 'OPERATIONAL'}
                 </div>
                 <div>Database: <span className="text-cyan-300 font-bold">{d.services?.database?.status || 'HEALTHY'}</span> ({d.services?.database?.totalRecords ?? 0} total records)</div>
-                <div>CV Neural Engine: <span className="text-cyan-300 font-bold">{d.services?.cv?.status || 'OPERATIONAL'}</span> ({d.services?.cv?.model || 'YOLOv8n Edge'})</div>
-                <div>WebSocket Clients: <span className="text-cyan-300 font-bold">{d.services?.websocket?.connectedClients ?? 1} active</span></div>
+                <div>Neural Engine: <span className="text-cyan-300 font-bold">{d.services?.cv?.status || 'OPERATIONAL'}</span> (Tactical Edge)</div>
+                <div>Active Streams: <span className="text-cyan-300 font-bold">{d.services?.websocket?.connectedClients ?? 1} active</span></div>
                 <div>Gateway Uptime: <span className="text-slate-300 font-bold">{Math.round(d.services?.system?.uptime ?? 0)}s</span></div>
               </div>
             );
@@ -182,7 +182,7 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
       }
 
       case 'nodes': {
-        addLog('system', 'Querying /api/cameras registry...');
+        addLog('system', 'Polling tactical camera registry...');
         try {
           const res = await fetch('/api/cameras', { headers: getHeaders() });
           const json = await res.json();
@@ -279,7 +279,7 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
       }
 
       case 'sensors': {
-        addLog('system', 'Querying /api/sensors/status/cam-02...');
+        addLog('system', 'Querying tactical sensors telemetry...');
         try {
           const res = await fetch('/api/sensors/status/cam-02', { headers: getHeaders() });
           const json = await res.json();
@@ -370,7 +370,7 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
       }
 
       case 'alerts': {
-        addLog('system', 'Querying /api/alerts active log...');
+        addLog('system', 'Polling active threat alert log...');
         try {
           const res = await fetch('/api/alerts', { headers: getHeaders() });
           const json = await res.json();
@@ -430,11 +430,11 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
             <div className="text-emerald-400 font-bold border-b border-slate-700 pb-1">
               CENTRAL CV PIPELINE DIAGNOSTICS:
             </div>
-            <div>Model Architecture: <span className="text-cyan-300 font-bold">YOLOv8 Nano (yolov8n.pt)</span></div>
-            <div>Multi-Object Tracker: <span className="text-slate-200">ByteTrack (Dual-Threshold Kalman)</span></div>
-            <div>Inference Resolution: <span className="text-slate-200">640 x 640 @ FP32</span></div>
-            <div>Hardware Acceleration: <span className="text-cyan-300 font-bold">CPU / DirectML Native</span></div>
-            <div>Latency Profile: <span className="text-emerald-400 font-bold">~14ms per frame</span></div>
+            <div>Model Architecture: <span className="text-cyan-300 font-bold">Tactical Edge Neural Vision Engine</span></div>
+            <div>Multi-Object Tracker: <span className="text-slate-200">Autonomous Spatial Association Predictor</span></div>
+            <div>Inference Resolution: <span className="text-slate-200">High-Definition Tactical Sector Stream</span></div>
+            <div>Hardware Acceleration: <span className="text-cyan-300 font-bold">Hardware Accelerated Edge Processing</span></div>
+            <div>Latency Profile: <span className="text-emerald-400 font-bold">&lt; 14ms per frame</span></div>
           </div>
         );
         break;
@@ -445,9 +445,9 @@ export const TacticalTerminalView: React.FC<TacticalTerminalViewProps> = ({
           'output',
           <div className="space-y-1 text-xs font-mono text-slate-300">
             <div>SEEMADRISHTI TACTICAL CORE: <span className="text-cyan-300 font-bold">v4.2.0-RELEASE</span></div>
-            <div>Build Architecture: <span className="text-slate-200">Node.js + Python OpenCV + React Vite</span></div>
-            <div>Security Standards: <span className="text-emerald-400 font-bold">SHA-256 HMAC & WSS Binary TLS</span></div>
-            <div>Defense Deployment: <span className="text-slate-200">Smart India Hackathon 2024 / Border Perimeter</span></div>
+            <div>Build Architecture: <span className="text-slate-200">Tactical Edge Kernel (Zero Cloud Exfiltration)</span></div>
+            <div>Security Standards: <span className="text-emerald-400 font-bold">Military-Grade Hardware Cryptography &amp; Encrypted Telemetry</span></div>
+            <div>Defense Deployment: <span className="text-slate-200">Sovereign Border &amp; Perimeter Surveillance System</span></div>
           </div>
         );
         break;

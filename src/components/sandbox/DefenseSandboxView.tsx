@@ -55,7 +55,7 @@ export const DefenseSandboxView: React.FC<DefenseSandboxViewProps> = ({
       targetCam: 'CAM-02',
       targetCamName: 'Sector Bravo Perimeter Fence',
       severity: 'CRITICAL',
-      description: 'Simulates a covert intruder traversing the primary border wire at 02:40 AM with cutting shears. Tests tripwire zone geofence and Kalman trajectory dwell estimation.',
+      description: 'Simulates a covert intruder traversing the primary border wire at 02:40 AM with cutting shears. Tests tripwire zone geofence and spatial trajectory dwell estimation.',
       videoFixture: '/fixtures/loitering_test.mp4',
       escalation: 'DEFCON 2 // Immediate Armed Breach Escalation',
       expectedRiskScore: 94,
@@ -79,7 +79,7 @@ export const DefenseSandboxView: React.FC<DefenseSandboxViewProps> = ({
       targetCam: 'CAM-01',
       targetCamName: 'Sector Alpha to Sector Bravo Corridor',
       severity: 'HIGH',
-      description: 'Re-identification (ReID) test: tracks a lone target crossing from Alpha Main Gate coverage wedge into Bravo Exclusion Fence without losing Kalman filter track identity.',
+      description: 'Re-identification (ReID) test: tracks a lone target crossing from Alpha Main Gate coverage wedge into Bravo Exclusion Fence without losing spatial track identity.',
       videoFixture: '/fixtures/intrusion_test.mp4',
       escalation: 'Target Journey Handover Matrix Updated (94% ReID Match)',
       expectedRiskScore: 78,
@@ -113,7 +113,7 @@ export const DefenseSandboxView: React.FC<DefenseSandboxViewProps> = ({
     setTimeout(() => {
       setTelemetryLogs((prev) => [
         ...prev,
-        `[1.6s] YOLOv8 Edge inference active: Kalman tracker assigned Track #${Math.floor(Math.random() * 500) + 100}`,
+        `[1.6s] Tactical Edge inference active: Spatial tracker assigned Track #${Math.floor(Math.random() * 500) + 100}`,
       ]);
     }, 1600);
 
@@ -153,9 +153,9 @@ export const DefenseSandboxView: React.FC<DefenseSandboxViewProps> = ({
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-100 flex items-center gap-2">
-              DEFENSE SCENARIO SANDBOX // EVALUATOR EXERCISE LAB
+              DEFENSE SCENARIO SANDBOX // FIELD EXERCISE LAB
               <span className="px-2 py-0.5 bg-amber-950 text-amber-300 text-[10px] rounded border border-amber-500/30 font-bold">
-                SIH EVALUATION READY
+                OPERATIONAL READY
               </span>
             </h1>
             <p className="text-xs text-slate-400">
@@ -181,7 +181,7 @@ export const DefenseSandboxView: React.FC<DefenseSandboxViewProps> = ({
         {/* Left Column: 4 Selectable Scenarios (5 cols on lg) */}
         <div className="lg:col-span-5 space-y-3">
           <div className="text-xs font-bold text-slate-400 px-1">
-            SELECT INTRUSION / EVALUATION SCENARIO:
+            SELECT INTRUSION SCENARIO:
           </div>
 
           {scenarios.map((scen) => {

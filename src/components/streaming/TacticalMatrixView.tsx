@@ -221,7 +221,7 @@ export const TacticalMatrixView: React.FC<TacticalMatrixViewProps> = ({
           resolution: cam.resolution || '4K UHD',
           fps: cam.fps || 60,
           bitrate: cam.bitrate || '8.2 Mbps',
-          aiModels: cam.aiModels || ['YOLOv11-Border'],
+          aiModels: cam.aiModels || ['Tactical-Vision-AI'],
           activeDetections: cam.activeDetections || 2,
           dangerZones: [],
         });

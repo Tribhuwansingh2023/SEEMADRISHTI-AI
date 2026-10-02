@@ -122,7 +122,7 @@ export interface IncidentEvidence {
 const INCIDENTS_DATA: IncidentEvidence[] = [
   {
     id: 'inc-001',
-    logId: 'LOG: #SIH-26187-001',
+    logId: 'LOG: #DEF-7049-001',
     cameraName: 'PERIMETER_NW_04',
     cameraCode: 'CAM-02',
     timestamp: '02:14:03 AM',
@@ -161,7 +161,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
         color: '#ffb4ab',
       },
       {
-        label: 'YOLOv8 OBJECT VERIFICATION',
+        label: 'AI OBJECT VERIFICATION',
         valueText: '+13 Points (96.2% Confidence)',
         weight: 0.13,
         weightPercent: 13,
@@ -178,7 +178,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
     verificationStatus: 'VERIFIED',
     evidenceStatus: 'ready',
     decisionTrace: [
-      { step: 1, rule: 'YOLOv8 Detection Engine', output: 'Person verified (96.2% Confidence)', passed: true, points: 13 },
+      { step: 1, rule: 'Autonomous Vision Engine', output: 'Person verified (96.2% Confidence)', passed: true, points: 13 },
       { step: 2, rule: 'Geofence Boundary Test', output: 'Centroid crossed POLY_ALPHA_FENCE line', passed: true, points: 35 },
       { step: 3, rule: 'Temporal Dwell Accumulator', output: 'Continuous dwell 42.4s > 15.0s baseline', passed: true, points: 30 },
       { step: 4, rule: 'Kinematic Vector Heading', output: '-38° inbound toward Asset Line Level 1', passed: true, points: 20 },
@@ -196,12 +196,12 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
       calibrationEce: 0.016,
     },
     formula: {
-      equation: 'Risk = min(100, (w_fence·35 + w_dwell·30 + w_traj·20 + w_yolo·13)) = 98 PTS',
+      equation: 'Risk = min(100, (w_fence·35 + w_dwell·30 + w_traj·20 + w_vision·13)) = 98 PTS',
       weights: [
         {"factor": "Fence Scaling", "weight": 0.35, "score": 100, "points": 35},
         {"factor": "Dwell Time", "weight": 0.30, "score": 100, "points": 30},
         {"factor": "Inward Heading", "weight": 0.20, "score": 100, "points": 20},
-        {"factor": "YOLO Confidence", "weight": 0.13, "score": 100, "points": 13},
+        {"factor": "Vision Confidence", "weight": 0.13, "score": 100, "points": 13},
       ],
       total: 98,
     },
@@ -209,7 +209,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
   },
   {
     id: 'inc-002',
-    logId: 'LOG: #SIH-26187-002',
+    logId: 'LOG: #DEF-7049-002',
     cameraName: 'MAIN_GATE_ALPHA_01',
     cameraCode: 'CAM-01',
     timestamp: '03:12:40 AM',
@@ -294,7 +294,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
   },
   {
     id: 'inc-003',
-    logId: 'LOG: #SIH-26187-003',
+    logId: 'LOG: #DEF-7049-003',
     cameraName: 'ARMORY_BAY_A_02',
     cameraCode: 'CAM-03',
     timestamp: '03:41:18 AM',
@@ -379,7 +379,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
   },
   {
     id: 'inc-004',
-    logId: 'LOG: #SIH-26187-004',
+    logId: 'LOG: #DEF-7049-004',
     cameraName: 'SECTOR_DELTA_TRENCH_04',
     cameraCode: 'CAM-04',
     timestamp: '05:03:12 AM',
@@ -464,7 +464,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
   },
   {
     id: 'inc-005',
-    logId: 'LOG: #SIH-26187-005',
+    logId: 'LOG: #DEF-7049-005',
     cameraName: 'SECTOR_ECHO_RIDGE_05',
     cameraCode: 'CAM-05',
     timestamp: '06:19:40 AM',
@@ -549,7 +549,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
   },
   {
     id: 'inc-006',
-    logId: 'LOG: #SIH-26187-006',
+    logId: 'LOG: #DEF-7049-006',
     cameraName: 'OUTPOST_BRAVO_06',
     cameraCode: 'CAM-06',
     timestamp: '07:15:22 AM',
@@ -588,7 +588,7 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
         color: '#ffb4ab',
       },
       {
-        label: 'YOLOv8 HIGH CONFIDENCE PERSON',
+        label: 'HIGH CONFIDENCE TARGET',
         valueText: '+10 Points (97.0% Accuracy)',
         weight: 0.10,
         weightPercent: 10,
@@ -621,12 +621,12 @@ const INCIDENTS_DATA: IncidentEvidence[] = [
       calibrationEce: 0.010,
     },
     formula: {
-      equation: 'Risk = (w_wall·40 + w_gear·25 + w_wire·20 + w_yolo·10) = 95 PTS',
+      equation: 'Risk = (w_wall·40 + w_gear·25 + w_wire·20 + w_vision·10) = 95 PTS',
       weights: [
         {"factor": "Wall Scaling", "weight": 0.40, "score": 100, "points": 40},
         {"factor": "Equipment Anomaly", "weight": 0.25, "score": 100, "points": 25},
         {"factor": "Tripwire Severance", "weight": 0.20, "score": 100, "points": 20},
-        {"factor": "YOLO Confidence", "weight": 0.10, "score": 100, "points": 10},
+        {"factor": "Vision Confidence", "weight": 0.10, "score": 100, "points": 10},
       ],
       total: 95,
     },
@@ -691,7 +691,7 @@ function mapRecordToEvidence(rec: IncidentRecord): IncidentEvidence {
   });
 
   const decisionTrace: DecisionTraceStep[] = meta.decision_trace || [
-    { step: 1, rule: 'YOLOv8 Detection Engine', output: `${meta.class_name || 'person'} (95.4% Confidence)`, passed: true, points: 12 },
+    { step: 1, rule: 'Autonomous Vision Engine', output: `${meta.class_name || 'person'} (95.4% Confidence)`, passed: true, points: 12 },
     { step: 2, rule: 'Geofence Boundary Test', output: `Centroid inside ${rec.zone_name || 'Restricted Perimeter Line'}`, passed: true, points: 35 },
     { step: 3, rule: 'Temporal Dwell Accumulator', output: `Dwell ${(rec.pre_event_seconds || 10) * 3.5}s > 15.0s Threshold`, passed: true, points: 28 },
     { step: 4, rule: 'Kinematic Vector Heading', output: 'Inbound approach vector toward asset line', passed: true, points: 20 },
@@ -1510,7 +1510,7 @@ export const IncidentInspectorView: React.FC<IncidentInspectorViewProps> = ({
                 <div className="space-y-3">
                   <div className="font-mono text-[10px] text-cyan-300 uppercase tracking-widest flex items-center justify-between font-bold">
                     <span>SEQUENTIAL NEURAL LOGIC TRACE</span>
-                    <span className="text-slate-400">SIH26187 AUDIT</span>
+                    <span className="text-slate-400">DEFENSE AUDIT VERIFIED</span>
                   </div>
 
                   <div className="space-y-2">

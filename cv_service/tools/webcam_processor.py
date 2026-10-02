@@ -39,7 +39,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from typing import Any, Dict, List, Optional, Tuple
 
-# Ensure project root is on sys.path
+import concurrent.futures
 import cv2
 import numpy as np
 import torch
@@ -85,11 +85,14 @@ class WebcamCVProcessor:
         self.activity_detectors: Dict[str, UnusualActivityDetector] = {}
         self.plate_engine: Optional[NumberPlateEngine] = None
         self.plate_cache: Dict[str, Dict[int, Dict[str, Any]]] = {}  # cam_id -> {track_id: plate_info}
+        self.in_flight_anpr: Set[Tuple[str, int]] = set()  # {(cam_id, track_id)}
+        self.anpr_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="ANPR-Worker")
         self.is_ready = False
         self.frame_times: deque = deque(maxlen=30)
         self.total_processed_frames = 0
         self.dropped_frames_count = 0
         self.latest_result_cache: Dict[str, Any] = {}
+        self.last_telemetry: Dict[str, Any] = {}
         self.camera_busy_locks: Dict[str, threading.Lock] = {}
         self._lock = threading.Lock()
 
@@ -304,34 +307,62 @@ class WebcamCVProcessor:
                 trk_copy["sub_label"] = sub_label
                 formatted_tracks.append(trk_copy)
 
-            # 4. Number Plate Detection & Recognition (ANPR)
+            # 4. Number Plate Detection & Recognition (ANPR - Asynchronous Non-Blocking)
             plates_list = []
-            cam_plate_cache = self.plate_cache[camera_id.lower().strip()]
+            cam_key = camera_id.lower().strip()
+            cam_plate_cache = self.plate_cache[cam_key]
 
-            # Run ANPR on up to 2 vehicles per frame to maintain high real-time FPS
-            for v_trk in vehicles_detected[:2]:
+            for v_trk in vehicles_detected[:3]:
                 v_tid = v_trk.get("track_id", 0)
                 v_cls = v_trk.get("class_name", "car")
                 v_bbox = v_trk.get("bbox", {})
 
                 cached_entry = cam_plate_cache.get(v_tid)
                 now_t = time.time()
-                should_run_anpr = False
-                if cached_entry is None:
-                    should_run_anpr = True
-                elif not cached_entry.get("readable") and (now_t - cached_entry.get("last_attempt", 0) > 4.0):
-                    # Re-attempt at most once every 4.0 seconds for tracks without a readable plate
-                    should_run_anpr = True
 
-                if should_run_anpr and self.plate_engine:
-                    plate_res = self.plate_engine.recognize_plate(frame_bgr, v_bbox, vehicle_class=v_cls)
-                    plate_res["track_id"] = v_tid
-                    plate_res["vehicle_id"] = f"Vehicle #{v_tid:02d}"
-                    plate_res["last_attempt"] = now_t
-                    cam_plate_cache[v_tid] = plate_res
-                    plates_list.append(plate_res)
-                elif cached_entry:
+                if cached_entry and cached_entry.get("readable"):
+                    # High-confidence plate already recognized and permanently bound to this track ID
                     plates_list.append(cached_entry)
+                else:
+                    # Check if OCR needs to be queued in background
+                    should_run_anpr = False
+                    if (cam_key, v_tid) not in self.in_flight_anpr:
+                        if cached_entry is None:
+                            should_run_anpr = True
+                        elif not cached_entry.get("readable") and (now_t - cached_entry.get("last_attempt", 0) > 4.0):
+                            should_run_anpr = True
+
+                    if should_run_anpr and self.plate_engine:
+                        self.in_flight_anpr.add((cam_key, v_tid))
+
+                        def _async_anpr_worker(tid: int, vcls: str, bbox: Dict[str, Any], frame_copy: np.ndarray, c_key: str):
+                            try:
+                                plate_res = self.plate_engine.recognize_plate(frame_copy, bbox, vehicle_class=vcls)
+                                plate_res["track_id"] = tid
+                                plate_res["vehicle_id"] = f"Vehicle #{tid:02d}"
+                                plate_res["last_attempt"] = time.time()
+                                with self._lock:
+                                    self.plate_cache[c_key][tid] = plate_res
+                            except Exception as e:
+                                pass
+                            finally:
+                                with self._lock:
+                                    self.in_flight_anpr.discard((c_key, tid))
+
+                        self.anpr_executor.submit(_async_anpr_worker, v_tid, v_cls, dict(v_bbox), frame_bgr.copy(), cam_key)
+
+                    if cached_entry:
+                        plates_list.append(cached_entry)
+                    else:
+                        plates_list.append({
+                            "track_id": v_tid,
+                            "vehicle_id": f"Vehicle #{v_tid:02d}",
+                            "vehicle_type": v_cls.upper(),
+                            "plate_number": "SCANNING...",
+                            "readable": False,
+                            "confidence": 0.0,
+                            "time": time.strftime("%H:%M:%S"),
+                        })
 
             # 5. Stateful Behavioral & Unusual Activity Detection
             t_act0 = time.perf_counter()
@@ -506,6 +537,16 @@ class WebcamCVProcessor:
             },
             "timestamp": client_timestamp or int(time.time() * 1000),
         }
+        self.last_telemetry = {
+            "preprocess_ms": preprocess_ms,
+            "inference_ms": inference_time_ms,
+            "tracking_ms": tracking_time_ms,
+            "postprocess_ms": postprocess_ms,
+            "total_ms": total_latency_ms,
+            "measured_fps": measured_fps,
+            "detections_count": len(raw_detections),
+            "tracks_count": len(formatted_tracks),
+        }
         self.latest_result_cache[camera_id] = res_payload
         return res_payload
 
@@ -583,6 +624,13 @@ def run_server(port: int = 8088):
                     "vram": vram_info,
                     "total_processed": processor.total_processed_frames,
                     "active_cameras": list(processor.trackers.keys()),
+                    "preprocess_ms": processor.last_telemetry.get("preprocess_ms", 1.0),
+                    "inference_ms": processor.last_telemetry.get("inference_ms", 0.0),
+                    "tracking_ms": processor.last_telemetry.get("tracking_ms", 0.0),
+                    "postprocess_ms": processor.last_telemetry.get("postprocess_ms", 1.0),
+                    "total_ms": processor.last_telemetry.get("total_ms", 0.0),
+                    "detections_count": processor.last_telemetry.get("detections_count", 0),
+                    "active_tracks_count": processor.last_telemetry.get("tracks_count", 0),
                 }
                 resp_bytes = json.dumps(resp).encode("utf-8")
                 self.send_response(200)
@@ -694,24 +742,18 @@ def run_server(port: int = 8088):
                 acquired = cam_lock.acquire(blocking=False)
                 if not acquired:
                     processor.dropped_frames_count += 1
-                    cached = processor.latest_result_cache.get(camera_id)
-                    if cached:
-                        cached_copy = dict(cached)
-                        cached_copy["dropped"] = True
-                        cached_copy["telemetry"] = dict(cached.get("telemetry", {}))
-                        cached_copy["telemetry"]["dropped_frames"] = processor.dropped_frames_count
-                        cached_copy["telemetry"]["queue_size"] = 0
-                        resp_bytes = json.dumps(cached_copy).encode("utf-8")
-                    else:
-                        resp_bytes = json.dumps({
-                            "success": True,
-                            "dropped": True,
-                            "camera_id": camera_id,
-                            "detections": [],
-                            "tracks": [],
-                            "counts": {"total": 0, "persons": 0, "vehicles": 0, "plates": 0, "events": 0, "alerts": 0},
-                            "telemetry": {"dropped_frames": processor.dropped_frames_count, "queue_size": 0, "total_latency_ms": 1, "measured_fps": 15.0}
-                        }).encode("utf-8")
+                    resp_bytes = json.dumps({
+                        "success": True,
+                        "dropped": True,
+                        "status": "DROPPED_BUSY",
+                        "camera_id": camera_id,
+                        "telemetry": {
+                            "dropped_frames": processor.dropped_frames_count,
+                            "queue_size": 0,
+                            "total_latency_ms": 1.0,
+                            "measured_fps": 15.0
+                        }
+                    }).encode("utf-8")
 
                     self.send_response(200)
                     self.send_header("Content-Type", "application/json")

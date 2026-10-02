@@ -14,7 +14,7 @@ export type VoiceAction =
   | { type: 'TOGGLE_THEME' }
   | { type: 'TOGGLE_PATROL' }
   | { type: 'AUTO_FOCUS_ALL' }
-  | { type: 'OPEN_DEMO_GUIDE' }
+
   | { type: 'OPEN_REPORTS' }
   | { type: 'REFRESH' };
 
@@ -433,15 +433,6 @@ class VoiceCommandService {
       match = {
         recognizedCommand: 'Calibrate Camera Feeds (Auto-Focus)',
         action: { type: 'AUTO_FOCUS_ALL' },
-      };
-    } else if (
-      raw.includes('demo guide') ||
-      raw.includes('sih demo') ||
-      raw.includes('presentation')
-    ) {
-      match = {
-        recognizedCommand: 'Open SIH 23-Point Live Demo Guide',
-        action: { type: 'OPEN_DEMO_GUIDE' },
       };
     } else if (
       raw.includes('generate report') ||

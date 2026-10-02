@@ -81,30 +81,7 @@ const recentPlates: Array<{
   time: string;
   camera_id: string;
   timestamp: number;
-}> = [
-  {
-    id: 'plate-seed-1',
-    vehicle_type: 'CAR',
-    vehicle_id: 'Vehicle #01',
-    plate_number: 'OD02AB1234',
-    confidence: 94.2,
-    readable: true,
-    time: new Date(Date.now() - 45000).toLocaleTimeString(),
-    camera_id: 'cam-01',
-    timestamp: Date.now() - 45000,
-  },
-  {
-    id: 'plate-seed-2',
-    vehicle_type: 'MOTORCYCLE',
-    vehicle_id: 'Vehicle #02',
-    plate_number: 'DL10CE5678',
-    confidence: 89.5,
-    readable: true,
-    time: new Date(Date.now() - 25000).toLocaleTimeString(),
-    camera_id: 'cam-03',
-    timestamp: Date.now() - 25000,
-  }
-];
+}> = [];
 
 // Helper to locate video file across allowed directories
 function findVideoFile(filename: string): string | null {

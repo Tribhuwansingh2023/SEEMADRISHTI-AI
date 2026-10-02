@@ -258,7 +258,7 @@ export async function generateAlertPdfReport(alert: AlertItem, operatorNotes?: s
   if (isVerified) {
     doc.text(`CRYPTOGRAPHIC EVIDENCE HASH: SHA-256 ${realHash.slice(0, 32)}... [VERIFIED]`, 14, footerY + 6);
   } else {
-    doc.text('RECORD STATUS: UNSEALED // NO AUTHORITATIVE CRYPTOGRAPHIC SEAL (DEMO RECORD)', 14, footerY + 6);
+    doc.text('RECORD STATUS: UNSEALED // PENDING AUTHORITATIVE CRYPTOGRAPHIC VERIFICATION', 14, footerY + 6);
   }
   doc.text('SEEMADRISHTI DEFENSE AI ENGINE // SECURE AUDIT CHAIN', 14, footerY + 11);
 

@@ -291,7 +291,7 @@ export const ScreenLockOverlay: React.FC = () => {
           onClick={() => {
             logout(() => {
               resetLock();
-              navigate('/login', { replace: true });
+              navigate('/', { replace: true });
             });
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/25 hover:bg-rose-950/50 border border-rose-500/30 hover:border-rose-500/60 text-rose-400 hover:text-rose-200 transition-all cursor-pointer text-xs font-bold uppercase tracking-wider shadow-[0_0_12px_rgba(244,63,94,0.15)] hover:shadow-[0_0_18px_rgba(244,63,94,0.3)]"

@@ -260,7 +260,7 @@ export const CameraHealthDiagnosticsView: React.FC = () => {
           {/* WebSocket Status Pill */}
           <button
             onClick={() => setShowWsConfigModal(true)}
-            title="Configure WebSocket Stream Endpoint"
+            title="Configure Stream Channel Settings"
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
               wsState.status === 'CONNECTED'
                 ? isDaylight

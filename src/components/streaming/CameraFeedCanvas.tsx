@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { CameraFeed } from '../../types';
 import { webSocketService, RealYoloDetection, TrackItem } from '../../services/websocketService';
 import { tacticalAlertDispatcher } from '../../utils/tacticalAlertDispatcher';
+import { getVideoRenderedRect } from '../../utils/videoRect';
 
 interface CameraFeedCanvasProps {
   camera: CameraFeed;
@@ -540,14 +541,10 @@ export const CameraFeedCanvas: React.FC<CameraFeedCanvasProps> = ({
         });
         total = tracks.length;
       } else {
-        const tracks = simState.current.syntheticTracks;
-        tracks.forEach((t) => {
-          const c = (t.rawClass || '').toLowerCase();
-          if (c === 'person' || c === 'intruder' || c === 'patrol' || c === 'pedestrian' || c === 'human' || c === 'guard') persons++;
-          else if (c === 'car' || c === 'truck' || c === 'van' || c === 'motorcycle' || c === 'vehicle' || c === 'bus' || c === 'bicycle' || c === 'suv') vehicles++;
-          else if (c === 'animal' || c === 'dog' || c === 'canine' || c === 'wildlife' || c === 'cattle' || c === 'k9') animals++;
-        });
-        total = tracks.length;
+        persons = 0;
+        vehicles = 0;
+        animals = 0;
+        total = 0;
       }
 
       onCountsUpdateRef.current?.({
@@ -783,22 +780,46 @@ export const CameraFeedCanvas: React.FC<CameraFeedCanvasProps> = ({
         ctx.restore();
       }
 
-      // 3. Render Detections, Line Proximity & Line Crossing Logic
+      // 3. Render Detections, Line Proximity & Line Crossing Logic (Zero Fake Mode - Requirement 28 & 29)
       if (showAiBoxes) {
         const hasLiveWs = Date.now() - lastWsUpdateTimeRef.current < 4000;
         const tracks = liveTracksRef.current;
         const detections = liveDetectionsRef.current;
+
+        // Compute exact rendered video geometry to prevent letterbox coordinate drift (Requirement 9)
+        const vid = videoRef.current;
+        let offsetX = 0;
+        let offsetY = 0;
+        let renderW = w;
+        let renderH = h;
+        if (vid && vid.videoWidth > 0 && vid.videoHeight > 0) {
+          const rect = getVideoRenderedRect(vid);
+          offsetX = rect.offsetX;
+          offsetY = rect.offsetY;
+          renderW = rect.renderW;
+          renderH = rect.renderH;
+        }
 
         if (hasLiveWs && (tracks.length > 0 || detections.length > 0)) {
           // Render Live Tracks from real YOLO/ByteTrack stream
           tracks.forEach((track) => {
             const fw = frameDimensionsRef.current?.w || 1920;
             const fh = frameDimensionsRef.current?.h || 1080;
-            const isNorm = track.bbox.x2 <= 1.0 && track.bbox.y2 <= 1.0;
-            const bx1 = isNorm ? track.bbox.x1 * w : (track.bbox.x1 / fw) * w;
-            const by1 = isNorm ? track.bbox.y1 * h : (track.bbox.y1 / fh) * h;
-            const bw = isNorm ? (track.bbox.x2 - track.bbox.x1) * w : ((track.bbox.x2 - track.bbox.x1) / fw) * w;
-            const bh = isNorm ? (track.bbox.y2 - track.bbox.y1) * h : ((track.bbox.y2 - track.bbox.y1) / fh) * h;
+            const b = track.bbox || {};
+            const nx1 = b.nx1 !== undefined ? b.nx1 : (b.x1 <= 1.0 ? b.x1 : b.x1 / fw);
+            const ny1 = b.ny1 !== undefined ? b.ny1 : (b.y1 <= 1.0 ? b.y1 : b.y1 / fh);
+            const nx2 = b.nx2 !== undefined ? b.nx2 : (b.x2 <= 1.0 ? b.x2 : b.x2 / fw);
+            const ny2 = b.ny2 !== undefined ? b.ny2 : (b.y2 <= 1.0 ? b.y2 : b.y2 / fh);
+
+            const clNx1 = Math.max(0, Math.min(0.99, nx1));
+            const clNy1 = Math.max(0, Math.min(0.99, ny1));
+            const clNx2 = Math.max(clNx1 + 0.005, Math.min(1.0, nx2));
+            const clNy2 = Math.max(clNy1 + 0.005, Math.min(1.0, ny2));
+
+            const bx1 = offsetX + clNx1 * renderW;
+            const by1 = offsetY + clNy1 * renderH;
+            const bw = (clNx2 - clNx1) * renderW;
+            const bh = (clNy2 - clNy1) * renderH;
 
             const tCenterX = bx1 + bw / 2;
             const tCenterY = by1 + bh / 2;
@@ -876,188 +897,14 @@ export const CameraFeedCanvas: React.FC<CameraFeedCanvasProps> = ({
           ctx.save();
           ctx.font = 'bold 7.5px monospace';
           ctx.fillStyle = 'rgba(16, 185, 129, 0.9)';
-          ctx.fillText('🟢 TRACKING: LIVE AI', w - 120, 14);
+          ctx.fillText(`🟢 LIVE AI ● ${tracks.length} TRACKS`, w - 140, 14);
           ctx.restore();
         } else {
-          // Render High-Fidelity Synthetic YOLO Detections Tailored Per CCTV
-          s.syntheticTracks.forEach((st) => {
-            const time = s.tick * st.speedFactor + st.phase;
-
-            let normX = st.baseNormX;
-            let normY = st.baseNormY;
-
-            if (st.motionType === 'linear_y') {
-              // Southbound: moves top-to-bottom from Y=0.10 to 0.90
-              const span = 0.80;
-              const prog = ((st.baseNormY - 0.10 + time * 0.05) % span + span) % span;
-              normY = 0.10 + prog;
-              normX = st.baseNormX + Math.sin(time * 0.2) * (st.ampX || 0.002);
-            } else if (st.motionType === 'linear_y_reverse') {
-              // Northbound: moves bottom-to-top from Y=0.90 to 0.10
-              const span = 0.80;
-              const prog = ((0.90 - st.baseNormY + time * 0.045) % span + span) % span;
-              normY = 0.90 - prog;
-              normX = st.baseNormX + Math.sin(time * 0.2) * (st.ampX || 0.002);
-            } else if (st.motionType === 'linear_x') {
-              // Eastbound: moves left-to-right from X=0.10 to 0.90
-              const span = 0.80;
-              const prog = ((st.baseNormX - 0.10 + time * 0.055) % span + span) % span;
-              normX = 0.10 + prog;
-              normY = st.baseNormY + Math.sin(time * 0.2) * (st.ampY || 0.002);
-            } else if (st.motionType === 'linear_x_reverse') {
-              // Westbound: moves right-to-left from X=0.90 to 0.10
-              const span = 0.80;
-              const prog = ((0.90 - st.baseNormX + time * 0.05) % span + span) % span;
-              normX = 0.90 - prog;
-              normY = st.baseNormY + Math.sin(time * 0.2) * (st.ampY || 0.002);
-            } else if (st.motionType === 'crosswalk') {
-              // Crossing zebra walk horizontally back & forth
-              normX = st.baseNormX + Math.sin(time * 0.4) * (st.ampX || 0.12);
-              normY = st.baseNormY + Math.cos(time * 0.4) * (st.ampY || 0.004);
-            } else {
-              // General oscillation
-              normX = (st.baseNormX + Math.sin(time) * st.ampX + 1) % 1;
-              normY = (st.baseNormY + Math.cos(time * 0.9) * st.ampY + 1) % 1;
-            }
-
-            const bx = normX * w;
-            const by = normY * h;
-            const bw = st.w * w;
-            const bh = st.h * h;
-            const tCenterX = bx + bw / 2;
-            const tCenterY = by + bh / 2;
-
-            // Two-Stage Line Proximity & Crossing Geometry
-            const { dist, projX, projY } = getDistanceToSegment(tCenterX, tCenterY, lx1, ly1, lx2, ly2);
-            const distNorm = dist / h;
-
-            const lineYAtX = ly1 + ((tCenterX - lx1) / Math.max(1, lx2 - lx1)) * (ly2 - ly1);
-            const crossingTolerance = Math.max(8, bh * 0.30);
-            const isCrossing = Math.abs(tCenterY - lineYAtX) < crossingTolerance && tCenterX >= Math.min(lx1, lx2) && tCenterX <= Math.max(lx1, lx2);
-            const isNear = distNorm < tacticalLine.bufferThreshold && !isCrossing;
-
-            const prevState = st.state;
-            if (isCrossing) {
-              st.state = 'LINE_CROSSING';
-              if (prevState !== 'LINE_CROSSING') {
-                tacticalAlertDispatcher.trigger({
-                  cameraId: camera.id,
-                  cameraName: camera.name,
-                  trackId: st.id,
-                  className: st.rawClass,
-                  type: 'LINE_CROSSING',
-                  lineName: tacticalLine.name,
-                });
-              }
-            } else if (isNear) {
-              st.state = 'SUSPICIOUS_AREA';
-              if (prevState === 'NORMAL') {
-                tacticalAlertDispatcher.trigger({
-                  cameraId: camera.id,
-                  cameraName: camera.name,
-                  trackId: st.id,
-                  className: st.rawClass,
-                  type: 'SUSPICIOUS_AREA',
-                  lineName: tacticalLine.name,
-                });
-              }
-            } else {
-              st.state = 'NORMAL';
-            }
-
-            const style = getDetectionClassStyle(st.rawClass || st.label, {
-              isThreat: st.isThreat,
-              isSuspiciousArea: st.state === 'SUSPICIOUS_AREA',
-              isCrossingLine: st.state === 'LINE_CROSSING',
-            });
-
-            const isMatch = matchesClassFilter(style.categoryLabel, st.rawClass || st.label, Boolean(st.isThreat), isCrossing, isNear, classFilter);
-
-            // Motion trail
-            if (showMotionTrails && isMatch) {
-              st.trail.push({ x: tCenterX, y: tCenterY });
-              if (st.trail.length > 14) st.trail.shift();
-
-              ctx.save();
-              ctx.strokeStyle = style.strokeColor;
-              ctx.lineWidth = 1;
-              ctx.setLineDash([2, 2]);
-              ctx.beginPath();
-              st.trail.forEach((pt, i) => {
-                if (i === 0) ctx.moveTo(pt.x, pt.y);
-                else ctx.lineTo(pt.x, pt.y);
-              });
-              ctx.stroke();
-              ctx.restore();
-            }
-
-            // Translucent box background & border
-            ctx.save();
-            if (!isMatch) {
-              ctx.globalAlpha = 0.20;
-            } else if (classFilter && classFilter !== 'ALL') {
-              ctx.shadowColor = style.strokeColor;
-              ctx.shadowBlur = 12;
-            }
-
-            ctx.fillStyle = style.fillColor;
-            ctx.fillRect(bx, by, bw, bh);
-
-            ctx.strokeStyle = style.strokeColor;
-            ctx.lineWidth = style.isHighPriority || (isMatch && classFilter && classFilter !== 'ALL') ? 2.5 : 1.5;
-            ctx.strokeRect(bx, by, bw, bh);
-
-            // Laser connector to line when suspicious or crossing
-            if (isNear || isCrossing) {
-              ctx.strokeStyle = st.state === 'LINE_CROSSING' ? '#dc2626' : '#f97316';
-              ctx.lineWidth = 1.5;
-              ctx.setLineDash([3, 3]);
-              ctx.beginPath();
-              ctx.moveTo(tCenterX, tCenterY);
-              ctx.lineTo(projX, projY);
-              ctx.stroke();
-
-              // Impact ripple at projection point on line if crossing
-              if (st.state === 'LINE_CROSSING') {
-                const pulseR = 5 + Math.sin(s.tick * 6) * 3;
-                ctx.fillStyle = 'rgba(220, 38, 38, 0.5)';
-                ctx.beginPath();
-                ctx.arc(projX, projY, pulseR, 0, Math.PI * 2);
-                ctx.fill();
-              }
-            }
-
-            // Corner highlights
-            const cLen = 4;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by);
-            ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen);
-            ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh);
-            ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen);
-            ctx.stroke();
-
-            // Label pill
-            const conf = Math.round(92 + Math.sin(s.tick + st.id) * 5);
-            const pillText = st.state === 'LINE_CROSSING' || st.state === 'SUSPICIOUS_AREA'
-              ? `[SIM] #${st.id} ${style.categoryLabel} ${conf}%`
-              : `[SIM] #${st.id} ${st.label} ${conf}%`;
-            ctx.font = 'bold 8px monospace';
-            const pillTextWidth = ctx.measureText(pillText).width;
-            ctx.fillStyle = style.badgeBg;
-            ctx.fillRect(bx, by - 13, Math.max(pillTextWidth + 8, bw), 13);
-            ctx.fillStyle = style.badgeTextColor;
-            ctx.fillText(pillText, bx + 4, by - 3);
-            ctx.restore();
-          });
-
-          // Subtle watermark tag for synthetic preview mode
+          // Zero Fake Detections in Live Mode (Requirement 28 & 29)
           ctx.save();
-          ctx.font = 'bold 7.5px monospace';
-          ctx.fillStyle = 'rgba(234, 179, 8, 0.75)';
-          ctx.fillText('⚡ TRACKING: SYNTHETIC', w - 130, 14);
+          ctx.font = 'bold 8px monospace';
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
+          ctx.fillText('🔴 AI OFFLINE // 0 DETECTIONS', w - 170, 16);
           ctx.restore();
         }
       }

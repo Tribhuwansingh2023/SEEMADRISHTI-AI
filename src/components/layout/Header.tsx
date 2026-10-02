@@ -21,7 +21,7 @@ interface HeaderProps {
   onRefresh: () => void;
   isRefreshing?: boolean;
   activeAlertCount?: number;
-  onOpenDemoMode?: () => void;
+
   onOpenSettings?: () => void;
   onOpenAlerts?: () => void;
   onOpenSwarmHelp?: () => void;
@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   isRefreshing = false,
   activeAlertCount = 12,
-  onOpenDemoMode,
+
   onOpenSettings,
   onOpenAlerts,
   onOpenSwarmHelp,
@@ -43,8 +43,15 @@ export const Header: React.FC<HeaderProps> = ({
   const [dateString, setDateString] = useState('MON, SEP 16, 2026');
   const [timeString, setTimeString] = useState('10:45:22 AM');
   const [utcString, setUtcString] = useState('17:45:22 UTC');
-  const [shortDate, setShortDate] = useState('22 Apr 2025');
-  const [clock24, setClock24] = useState('14:32:18');
+  const [shortDate, setShortDate] = useState(() => {
+    const now = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  });
+  const [clock24, setClock24] = useState(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  });
   const [wsState, setWsState] = useState<WebSocketServiceState>(
     webSocketService.getState()
   );
@@ -158,27 +165,43 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Right: System Status, Live Clock, Theme Toggle & Operator Profile */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* System Online Pill */}
-        <button
-          id="system-status-pill"
-          onClick={() => setIsAiStatusOpen(true)}
-          title="Click to inspect real-time AI subsystem integrity & model status"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/50 bg-[#072018]/90 text-emerald-400 font-mono font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.25)] cursor-pointer transition-all hover:scale-105 active:scale-95"
+      {/* Right: Live Clock, Theme Toggle & Operator Profile */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Modern Compact Executive Clock Badge */}
+        <div
+          title={`Real-Time Field Telemetry Clock: ${dateString} | UTC: ${utcString}`}
+          className={`hidden sm:flex items-center gap-2 h-9 px-3 rounded-xl border backdrop-blur-xl transition-all duration-200 select-none shadow-sm cursor-default group ${
+            isDaylight
+              ? 'bg-slate-100/90 border-slate-300/80 text-slate-800 hover:border-slate-400'
+              : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.10] hover:border-cyan-500/40 text-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.3)]'
+          }`}
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
-          <span className="tracking-wider">SYSTEM ONLINE</span>
-        </button>
-
-        {/* Digital Clock Pill matching reference screenshot */}
-        <div className="hidden sm:flex items-center gap-2.5 px-3 py-1 rounded-full border border-slate-700/60 bg-[#081020]/90 text-slate-300">
-          <Clock size={16} className="text-slate-400 shrink-0" />
-          <div className="text-left font-mono leading-tight">
-            <div className="text-[10px] text-slate-400 font-semibold">{shortDate}</div>
-            <div className="text-xs font-black text-white tracking-widest leading-none mt-0.5">{clock24}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]" />
+            <Clock
+              size={13}
+              className={`${
+                isDaylight ? 'text-cyan-700' : 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.6)]'
+              } group-hover:rotate-45 transition-transform duration-300`}
+            />
+            <span className="font-mono text-xs font-bold tracking-wider text-slate-900 dark:text-white">
+              {clock24}
+            </span>
           </div>
+
+          <span
+            className={`w-[1px] h-3.5 ${
+              isDaylight ? 'bg-slate-300' : 'bg-white/[0.12]'
+            }`}
+          />
+
+          <span
+            className={`font-mono text-[10px] font-semibold tracking-wider uppercase ${
+              isDaylight ? 'text-slate-600' : 'text-slate-400'
+            }`}
+          >
+            {shortDate}
+          </span>
         </div>
 
         {/* Multi-Agent Swarm Orchestrator Button */}
@@ -187,13 +210,13 @@ export const Header: React.FC<HeaderProps> = ({
             id="btn-open-swarm-help"
             onClick={onOpenSwarmHelp}
             title="Open Multi-Agent Work Distribution & Task Orchestration Help"
-            className={`p-1.5 sm:px-2.5 rounded-lg border flex items-center gap-1.5 font-mono text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+            className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group shadow-sm ${
               isDaylight
-                ? 'bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border-cyan-300'
-                : 'bg-cyan-950/60 hover:bg-cyan-900/80 border-cyan-500/40 text-cyan-300'
+                ? 'bg-slate-100/90 hover:bg-cyan-50 border-slate-300/80 hover:border-cyan-400 text-slate-700 hover:text-cyan-700'
+                : 'bg-white/[0.03] hover:bg-cyan-500/10 border-white/[0.10] hover:border-cyan-400/50 text-slate-300 hover:text-cyan-300'
             }`}
           >
-            <Zap size={13} className="text-cyan-400 animate-pulse" />
+            <Zap size={14} className="text-cyan-400 group-hover:scale-110 transition-transform duration-200" />
           </button>
         )}
 
@@ -206,16 +229,16 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'Switch to Military Matrix Dark Theme'
               : 'Switch to Standard High-Visibility Daylight Field Theme'
           }
-          className={`p-2 rounded-lg border flex items-center gap-1.5 font-mono text-xs font-bold transition-all cursor-pointer ${
+          className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group shadow-sm ${
             isDaylight
-              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
-              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 text-cyan-300'
+              ? 'bg-slate-100/90 hover:bg-amber-50 border-slate-300/80 hover:border-amber-400 text-amber-700'
+              : 'bg-white/[0.03] hover:bg-amber-500/10 border-white/[0.10] hover:border-amber-400/50 text-slate-300 hover:text-amber-300'
           }`}
         >
           {isDaylight ? (
-            <Sun size={14} className="text-amber-600 animate-spin-slow" />
+            <Sun size={15} className="text-amber-600 animate-spin-slow group-hover:scale-110 transition-transform duration-200" />
           ) : (
-            <Moon size={14} className="text-cyan-400" />
+            <Moon size={15} className="text-cyan-400 group-hover:scale-110 transition-transform duration-200" />
           )}
         </button>
 
@@ -225,21 +248,30 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onRefresh}
           disabled={isRefreshing}
           title="Refresh All Feeds & Alerts"
-          className={`p-2 rounded-lg border transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
+          className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group shadow-sm ${
             isDaylight
-              ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
-              : 'bg-[#050b14] hover:bg-cyan-950/60 border-cyan-500/30 text-cyan-400 hover:text-white'
-          } ${isRefreshing ? 'border-cyan-400 ring-2 ring-cyan-400/50' : ''}`}
+              ? 'bg-slate-100/90 hover:bg-slate-200 border-slate-300/80 hover:border-slate-400 text-slate-700'
+              : 'bg-white/[0.03] hover:bg-cyan-500/10 border-white/[0.10] hover:border-cyan-400/50 text-slate-300 hover:text-cyan-300'
+          } ${isRefreshing ? 'border-cyan-400 ring-2 ring-cyan-400/40' : ''}`}
         >
           <RefreshCw
             size={14}
-            className={`${isRefreshing ? 'animate-spin text-cyan-300' : ''}`}
+            className={`transition-transform duration-200 group-hover:rotate-45 ${
+              isRefreshing ? 'animate-spin text-cyan-300' : ''
+            }`}
           />
         </button>
 
-        {/* SAMPLE OF PROFILE SETUP: Right Upper Corner (Matching Reference Design) */}
+        {/* Modern Vertical Hairline Separator */}
+        <div
+          className={`h-5 w-px mx-0.5 sm:mx-1 ${
+            isDaylight ? 'bg-slate-300' : 'bg-white/[0.10]'
+          }`}
+        />
+
+        {/* SAMPLE OF PROFILE SETUP: Right Upper Corner */}
         {user ? (
-          <div className="pl-2 border-l border-slate-700/50">
+          <div>
             <OperatorProfileDropdown
               onOpenSettings={onOpenSettings}
               onOpenAlerts={onOpenAlerts}
@@ -248,7 +280,7 @@ export const Header: React.FC<HeaderProps> = ({
         ) : (
           <button
             onClick={() => setPortal('auth')}
-            className="p-1.5 px-3 rounded-xl border border-cyan-500/40 bg-cyan-950/50 hover:bg-cyan-900 text-cyan-300 text-xs font-bold flex items-center gap-1 cursor-pointer"
+            className="h-9 px-3.5 rounded-xl border border-cyan-500/40 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm"
           >
             <Lock size={12} />
             <span>SIGN IN</span>

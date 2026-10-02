@@ -17,7 +17,7 @@ import {
   UserManagementView,
   AlertDetailModal,
   CameraDetailModal,
-  SihDemoGuideModal,
+
   AnalyticsDashboard,
   IncidentInspectorView,
   IntelligenceSearch,
@@ -102,7 +102,7 @@ function SeemadrishtiMainApp() {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isAudioPingActive, setIsAudioPingActive] = useState(false);
   const [audioVolume, setAudioVolume] = useState(85);
-  const [isDemoGuideOpen, setIsDemoGuideOpen] = useState(false);
+
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [isSwarmHelpOpen, setIsSwarmHelpOpen] = useState(false);
 
@@ -202,7 +202,7 @@ function SeemadrishtiMainApp() {
   // Anomaly Sensitivity & Trajectory Settings
   const [anomalySensitivity, setAnomalySensitivity] = useState<number>(78);
   const [trajectoryDataset, setTrajectoryDataset] = useState<string>(
-    'TU Clausthal Pedestrian Trajectory Dataset (ETH/UCY Stream)'
+    'Standard Tactical Sector Movement Model (Operational Baseline)'
   );
   const [showTrajectoryVectors, setShowTrajectoryVectors] = useState<boolean>(true);
 
@@ -495,8 +495,7 @@ function SeemadrishtiMainApp() {
       } else if (act.type === 'MUTE_AUDIO') {
         setIsAudioMuted(act.muted);
         audioAlertEngine.setMuted(act.muted);
-      } else if (act.type === 'OPEN_DEMO_GUIDE') {
-        setIsDemoGuideOpen(true);
+
       } else if (act.type === 'OPEN_REPORTS') {
         setIsReportsModalOpen(true);
       } else if (act.type === 'REFRESH') {
@@ -627,56 +626,6 @@ function SeemadrishtiMainApp() {
         {/* Subtle 3D Command-Center Background Atmosphere */}
         <TacticalOperationsAtmosphere />
 
-        {/* Tactical Defense Telemetry Ribbon */}
-        {currentView !== 'dashboard' && (
-          <div
-            className={`h-6 shrink-0 flex-none px-4 flex items-center justify-between text-[9px] font-mono select-none overflow-hidden border-b relative z-10 ${
-              isDaylight
-                ? 'bg-slate-200 border-slate-300 text-slate-700'
-                : 'bg-[#010307] border-cyan-500/20 text-cyan-400'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex items-center gap-1 font-bold ${
-                  isDaylight ? 'text-emerald-700' : 'text-emerald-400'
-                }`}
-              >
-                [SEC_NET: ENCRYPTED 256-BIT]
-              </span>
-              <span className="text-slate-400">|</span>
-              <span className="hidden sm:inline">
-                [SYSTEM LATENCY: 14ms // 60 FPS INFERENCE]
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-rose-600 dark:text-rose-400 font-bold">
-                [ALERTS TODAY: {alerts.length}]
-              </span>
-              {(() => {
-                const defconMeta: Record<DefconLevel, { text: string; badgeCls: string }> = {
-                  1: { text: 'DEFCON 1 // MAXIMUM COMBAT READY', badgeCls: 'bg-rose-950/90 border-rose-500 text-rose-400 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]' },
-                  2: { text: 'DEFCON 2 // INCURSION IMMINENT', badgeCls: 'bg-orange-950/90 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.4)]' },
-                  3: { text: 'DEFCON 3 // INCREASED READINESS', badgeCls: 'bg-amber-950/90 border-amber-500 text-amber-400' },
-                  4: { text: 'DEFCON 4 // ACTIVE DEFENSE', badgeCls: 'bg-cyan-950/80 border-cyan-500/40 text-cyan-400' },
-                  5: { text: 'DEFCON 5 // PEACETIME NORMAL', badgeCls: 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400' },
-                };
-                const curr = defconMeta[defconLevel] || defconMeta[4];
-                return (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView('settings')}
-                    title="Click to view DEFCON Protocols & Rules of Engagement in System Config"
-                    className={`font-bold hidden sm:inline px-2 py-0.5 rounded border text-[11px] font-mono cursor-pointer transition-all hover:scale-105 active:scale-95 ${curr.badgeCls}`}
-                  >
-                    [{curr.text}]
-                  </button>
-                );
-              })()}
-            </div>
-          </div>
-        )}
 
         {/* 2. Top Header with Right Upper Corner Operator Profile */}
         <Header
@@ -684,7 +633,7 @@ function SeemadrishtiMainApp() {
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
           activeAlertCount={alerts.length}
-          onOpenDemoMode={() => setIsDemoGuideOpen(true)}
+
           onOpenSettings={() => setCurrentView('settings')}
           onOpenAlerts={() => setCurrentView('alerts')}
           onOpenSwarmHelp={() => setIsSwarmHelpOpen(true)}
@@ -697,7 +646,7 @@ function SeemadrishtiMainApp() {
             <div className="flex items-center gap-2">
               <AlertTriangle size={15} className="text-rose-400 shrink-0 animate-pulse" />
               <span>
-                <strong>BACKEND OFFLINE:</strong> Real-time edge gateway (:3000) disconnected. Displaying offline test fixtures. Reconnecting in background...
+                <strong>BACKEND OFFLINE:</strong> Real-time edge gateway disconnected. Displaying cached operational data. Reconnecting in background...
               </span>
             </div>
             <button
@@ -723,7 +672,7 @@ function SeemadrishtiMainApp() {
             <MissionControlView
               onNavigate={(view) => setCurrentView(view)}
               onOpenReports={() => setIsReportsModalOpen(true)}
-              onOpenDemo={() => setIsDemoGuideOpen(true)}
+
             />
           )}
 
@@ -927,12 +876,7 @@ function SeemadrishtiMainApp() {
         onClose={() => setIsReportsModalOpen(false)}
       />
 
-      {/* SIH Judge Presentation Guide Modal */}
-      <SihDemoGuideModal
-        isOpen={isDemoGuideOpen}
-        onClose={() => setIsDemoGuideOpen(false)}
-        onNavigateToView={(v) => setCurrentView(v)}
-      />
+
 
       {/* Multi-Agent Swarm Orchestration & Fast Work Distribution Help Modal */}
       <SwarmHelpModal
@@ -964,69 +908,68 @@ function LoadingScreen() {
 }
 
 function RootAppPortal() {
-  const { setPortal, isAuthenticated, isLoading, enterDemoMode } = useAuth();
+  const { setPortal, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const autoLoginRef = React.useRef(false);
+  const [accessGranted, setAccessGranted] = React.useState<boolean>(() => {
+    return sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true';
+  });
 
   const path = location.pathname;
-  const isLanding = path === '/' || path === '' || path === '/landing' || path === '/home';
+  const isLanding = path === '/' || path === '' || path === '/landing' || path === '/home' ||
+                    path === '/features' || path === '/use-cases' || path === '/technology' || path === '/about';
   const isAuthPage = path === '/login' || path === '/auth' || path === '/signin' ||
                      path === '/signup' || path === '/register';
   const isSignupPage = path === '/signup' || path === '/register';
 
-  // Single effect: handle all auth-driven navigation
+  const getInitialSection = () => {
+    if (path === '/features') return 'features';
+    if (path === '/use-cases') return 'use-cases';
+    if (path === '/technology') return 'technology';
+    if (path === '/about') return 'about';
+    return 'home';
+  };
+
+  // Guard: Users can ONLY enter the portal via the "Get Access" button on the landing page
   useEffect(() => {
     if (isLoading) return;
 
-    if (isAuthenticated && isAuthPage) {
-      // Logged in user visits login/signup → send to dashboard
-      navigate('/dashboard', { replace: true });
+    const hasAccess = sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true';
+    if (!hasAccess && !isLanding) {
+      navigate('/', { replace: true });
       return;
     }
-
-    if (!isAuthenticated && !isLanding && !isAuthPage && !autoLoginRef.current) {
-      // Unauthenticated user visits a protected route → auto-login then stay
-      autoLoginRef.current = true;
-      enterDemoMode('Commander').catch(() => {
-        autoLoginRef.current = false;
-        navigate('/login', { replace: true });
-      });
-    }
-  }, [isLoading, isAuthenticated, isLanding, isAuthPage, navigate, enterDemoMode]);
-
-  // ── Render tree ────────────────────────────────────────────────────────────
+  }, [isLoading, isLanding, navigate, path]);
 
   // 1. Session initialising
   if (isLoading) return <LoadingScreen />;
 
-  // 2. Landing page — always renders at /  (authenticated or not)
+  // 2. Landing page — renders at /, /features, /use-cases, /technology, /about
   if (isLanding) {
     return (
       <LandingPage
-        onEnterAuth={async () => {
-          if (isAuthenticated) {
-            navigate('/dashboard');
-            return;
-          }
-          try {
-            await enterDemoMode('Commander');
-            navigate('/dashboard');
-          } catch {
-            setPortal('auth');
-            navigate('/login');
-          }
+        initialSection={getInitialSection()}
+        onNavigateSection={(section) => {
+          navigate(section === 'home' ? '/' : `/${section}`);
+        }}
+        onEnterAuth={() => {
+          sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
+          setAccessGranted(true);
+          setPortal('auth');
+          navigate('/login');
         }}
       />
     );
   }
 
-  // 3. Login / Signup pages
+  // 3. Login / Signup pages — user ONLY gets this after clicking "Get Access"
   if (isAuthPage) {
     return (
       <Auth3DView
         initialMode={isSignupPage ? 'signup' : 'login'}
         onNavigateLanding={() => {
+          sessionStorage.removeItem('seemadrishti_portal_access_granted');
+          setAccessGranted(false);
           setPortal('landing');
           navigate('/');
         }}
@@ -1034,10 +977,37 @@ function RootAppPortal() {
     );
   }
 
-  // 4. Protected app routes
+  // 4. Protected app routes: strictly requires access to have been granted via "Get Access" button
+  const hasAccess = sessionStorage.getItem('seemadrishti_portal_access_granted') === 'true' || accessGranted;
+  if (!hasAccess) {
+    return (
+      <LandingPage
+        initialSection={getInitialSection()}
+        onNavigateSection={(section) => {
+          navigate(section === 'home' ? '/' : `/${section}`);
+        }}
+        onEnterAuth={() => {
+          sessionStorage.setItem('seemadrishti_portal_access_granted', 'true');
+          setAccessGranted(true);
+          setPortal('auth');
+          navigate('/login');
+        }}
+      />
+    );
+  }
+
   if (!isAuthenticated) {
-    // Still waiting for auto-login to complete
-    return <LoadingScreen />;
+    return (
+      <Auth3DView
+        initialMode="login"
+        onNavigateLanding={() => {
+          sessionStorage.removeItem('seemadrishti_portal_access_granted');
+          setAccessGranted(false);
+          setPortal('landing');
+          navigate('/');
+        }}
+      />
+    );
   }
 
   return <SeemadrishtiMainApp />;

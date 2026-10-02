@@ -385,7 +385,6 @@ export const TacticalOperationsAtmosphere: React.FC<TacticalOperationsAtmosphere
       ctx.fillStyle = activeThreatState ? palette.threatWatermarkFill : palette.watermarkFill;
       ctx.fillText('SECTOR FOXTROT-04 // ELEV: 1,840M MSL', 32, height - 36);
       ctx.fillText('GIS LAT: 34°08\'42.1"N · LNG: 74°48\'18.5"E', 32, height - 22);
-      ctx.fillText('DEFENSE GRID: 884-D // SENTRY LINK 9/9 SECURE', width - 280, height - 22);
 
       // Technical crosshairs at sector junctions
       const crosshairs = [

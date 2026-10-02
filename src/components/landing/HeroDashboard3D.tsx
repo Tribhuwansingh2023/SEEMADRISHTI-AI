@@ -27,7 +27,7 @@ interface HeroDashboard3DProps {
   onOpenApp?: () => void;
 }
 
-export const HeroDashboard3D: React.FC<HeroDashboard3DProps> = ({ onOpenApp }) => {
+export const HeroDashboard3D: React.FC<HeroDashboard3DProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(4);
   const [rotateY, setRotateY] = useState(-13);
@@ -61,10 +61,8 @@ export const HeroDashboard3D: React.FC<HeroDashboard3DProps> = ({ onOpenApp }) =
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full max-w-[700px] lg:max-w-[780px] xl:max-w-[840px] select-none cursor-pointer group"
+      className="relative w-full max-w-[700px] lg:max-w-[780px] xl:max-w-[840px] select-none cursor-default pointer-events-auto"
       style={{ perspective: '1400px' }}
-      onClick={onOpenApp}
-      title="Click to launch Live Tactical Command Dashboard"
     >
       {/* 3D Cyan Ambient Hologram Glow Underneath */}
       <div
@@ -76,7 +74,7 @@ export const HeroDashboard3D: React.FC<HeroDashboard3DProps> = ({ onOpenApp }) =
 
       {/* Main 3D Tilted Device Container */}
       <div
-        className="relative rounded-2xl p-1 sm:p-1.5 border-2 border-cyan-400/60 group-hover:border-cyan-300 bg-[#040814]/95 shadow-[0_25px_60px_rgba(0,240,255,0.35),0_0_25px_rgba(6,182,212,0.3)] transition-transform duration-200 ease-out overflow-hidden"
+        className="relative rounded-2xl p-1 sm:p-1.5 border-2 border-cyan-400/60 bg-[#040814]/95 shadow-[0_25px_60px_rgba(0,240,255,0.35),0_0_25px_rgba(6,182,212,0.3)] transition-transform duration-200 ease-out overflow-hidden"
         style={{
           transform: `perspective(1400px) rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(${
             isHovered ? 0.99 : 0.96
@@ -86,12 +84,6 @@ export const HeroDashboard3D: React.FC<HeroDashboard3DProps> = ({ onOpenApp }) =
       >
         {/* Holographic Gloss Sweep Highlight */}
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cyan-400/5 to-white/10 pointer-events-none z-40 rounded-2xl" />
-
-        {/* Floating "Live Interactivity" Hover Pill */}
-        <div className="absolute top-3 right-3 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/90 border border-cyan-400 text-cyan-300 text-[10px] font-mono font-bold shadow-lg">
-          <span>Launch Dashboard</span>
-          <ExternalLink size={11} />
-        </div>
 
         {/* DASHBOARD INTERIOR DISPLAY */}
         <div className="rounded-xl bg-[#060c18] overflow-hidden border border-slate-800 flex flex-col font-mono text-slate-200">

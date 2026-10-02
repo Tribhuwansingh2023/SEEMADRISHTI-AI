@@ -23,8 +23,8 @@ export const UserManagementView: React.FC = () => {
   const [currentOperator, setCurrentOperator] = useState<any>(null);
 
   // Login Modal Form State
-  const [loginUsername, setLoginUsername] = useState('admin');
-  const [loginPassword, setLoginPassword] = useState('Admin@123');
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -139,11 +139,16 @@ export const UserManagementView: React.FC = () => {
       return;
     }
 
+    if (!formData.password || formData.password.length < 6) {
+      alert('Security passphrase must contain at least 6 characters.');
+      return;
+    }
+
     try {
       const res = await createUser({
         name: formData.name.trim(),
         username: formData.username.trim() || formData.email.split('@')[0],
-        password: formData.password || 'Operator@123',
+        password: formData.password,
         role: formData.role,
         email: formData.email.trim(),
         shift: formData.shift,
@@ -164,7 +169,7 @@ export const UserManagementView: React.FC = () => {
           assigned_sector: 'Gate Alpha & Checkpoint 1',
           status: 'on_duty',
         });
-        setToastMessage(`Operator ${res.data.name} registered and saved to SQLite!`);
+        setToastMessage(`Operator ${res.data.name} registered and saved to registry!`);
         setTimeout(() => setToastMessage(null), 3500);
       }
     } catch (err: any) {
@@ -248,7 +253,7 @@ export const UserManagementView: React.FC = () => {
               <Users size={18} />
             </span>
             <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
-              PERSONNEL ROSTER &amp; ACCESS CONTROL // LIVE SQLITE
+              PERSONNEL ROSTER &amp; ACCESS CONTROL // SECURE REGISTRY
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-0.5 font-mono">
@@ -268,7 +273,7 @@ export const UserManagementView: React.FC = () => {
       {/* Loading state */}
       {loading && users.length === 0 && (
         <div className="p-12 text-center text-slate-400 font-mono text-xs">
-          Loading personnel records from SQLite database...
+          Loading personnel records from secure registry...
         </div>
       )}
 
@@ -373,7 +378,7 @@ export const UserManagementView: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. admin"
+                  placeholder="Operator username / callsign"
                   value={loginUsername}
                   onChange={(e) => setLoginUsername(e.target.value)}
                   className="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-white focus:border-cyan-400 outline-none"
@@ -458,7 +463,8 @@ export const UserManagementView: React.FC = () => {
                   <label className="text-slate-300 block">PASSWORD:</label>
                   <input
                     type="password"
-                    placeholder="Defaults: Operator@123"
+                    required
+                    placeholder="Enter security passphrase..."
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-white focus:border-cyan-400 outline-none"
@@ -529,7 +535,7 @@ export const UserManagementView: React.FC = () => {
                   type="submit"
                   className="flex-1 px-4 py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-all cursor-pointer shadow-lg"
                 >
-                  Save to SQLite
+                  Save Personnel Record
                 </button>
               </div>
             </form>

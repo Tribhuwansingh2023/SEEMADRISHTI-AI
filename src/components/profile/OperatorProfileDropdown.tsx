@@ -9,6 +9,7 @@ import {
   MapPin,
   Clock,
   Check,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -64,16 +65,22 @@ export const OperatorProfileDropdown: React.FC<OperatorProfileDropdownProps> = (
     <div className="relative font-mono" ref={dropdownRef}>
       <div className="flex items-center">
 
-        {/* Profile Avatar Pill with Glowing Status Ring & Label */}
+        {/* Profile Avatar Pill with Modern Glass Aesthetic & Cohesive h-9 Form Factor */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`relative p-1 px-2.5 rounded-full border border-slate-700/60 bg-[#081020]/90 hover:bg-[#0c1830] transition-all active:scale-95 cursor-pointer flex items-center gap-2.5 group ${
-            isOpen ? 'ring-2 ring-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : ''
+          className={`relative h-9 px-2 sm:px-2.5 rounded-xl border transition-all duration-200 active:scale-95 cursor-pointer flex items-center gap-2 group backdrop-blur-xl shadow-sm select-none ${
+            isDaylight
+              ? 'bg-slate-100/90 hover:bg-slate-200 border-slate-300/80 text-slate-800'
+              : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.10] hover:border-cyan-400/40 text-slate-200'
+          } ${
+            isOpen
+              ? 'ring-2 ring-cyan-400/50 border-cyan-400/60 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
+              : ''
           }`}
         >
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-600 shadow-md bg-slate-800 flex items-center justify-center">
+          <div className="relative shrink-0">
+            <div className="w-6 h-6 rounded-lg overflow-hidden border border-white/20 shadow-xs bg-slate-800 flex items-center justify-center">
               <img
                 src="/operator_avatar.jpg"
                 alt={user.name}
@@ -82,22 +89,29 @@ export const OperatorProfileDropdown: React.FC<OperatorProfileDropdownProps> = (
                   (e.currentTarget as HTMLElement).style.display = 'none';
                 }}
               />
-              <User size={18} className="text-slate-400" />
+              <User size={13} className="text-slate-400" />
             </div>
             {/* Verified Green Tick Badge */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border border-black flex items-center justify-center shadow-xs">
-              <Check size={8} className="text-black stroke-[3.5]" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black flex items-center justify-center shadow-xs">
+              <Check size={6} className="text-black stroke-[3.5]" />
             </div>
           </div>
 
-          <div className="text-left font-mono leading-tight hidden xs:block pr-1">
-            <div className="text-xs font-bold text-white tracking-wide">
+          <div className="text-left font-mono leading-tight hidden xs:block pr-0.5">
+            <div className="text-[11px] font-bold text-slate-900 dark:text-white tracking-wide truncate max-w-[110px]">
               {user.name || 'Admin'}
             </div>
-            <div className="text-[10px] text-slate-400">
+            <div className="text-[9px] text-slate-500 dark:text-slate-400 truncate max-w-[110px]">
               {user.role === 'Commander' ? 'Security Operator' : user.role || 'Security Operator'}
             </div>
           </div>
+
+          <ChevronDown
+            size={11}
+            className={`text-slate-400 group-hover:text-cyan-400 transition-transform duration-200 hidden sm:block ${
+              isOpen ? 'rotate-180 text-cyan-400' : ''
+            }`}
+          />
         </button>
       </div>
 

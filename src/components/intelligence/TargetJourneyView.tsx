@@ -58,8 +58,8 @@ const TACTICAL_NODES: Record<string, { x: number; y: number; name: string; secto
   'cam-09': { x: 385, y: 310, name: 'CAM-09', sector: 'Sector India', role: 'Command Post Base' },
 };
 
-// Preset high-threat demo targets for live demonstration
-const DEMO_PRESETS = [
+// Priority high-threat targets for rapid tactical selection
+const PRIORITY_TARGETS = [
   { id: 992, label: 'TARGET #992', incursionType: 'HIGH-SPEED SPRINT', desc: '12.2 km/h Infiltration (CAM-01 ➔ CAM-02)', risk: 'CRITICAL', score: 98, badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/40', cls: 'person' },
   { id: 13, label: 'TARGET #13', incursionType: 'RESTRICTED EXCLUSION BREACH', desc: 'Main Gate Polygon Breach (2 Hops)', risk: 'CRITICAL', score: 92, badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/40', cls: 'person' },
   { id: 27, label: 'TARGET #27', incursionType: 'LOITERING & TRIPWIRE CROSSING', desc: '120s Extended Dwell (Sector Alpha)', risk: 'CRITICAL', score: 85, badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/40', cls: 'person' },
@@ -90,7 +90,7 @@ export const TargetJourneyView: React.FC<TargetJourneyViewProps> = ({
   const [showDossierModal, setShowDossierModal] = useState<boolean>(false);
   const [hasCopiedDossier, setHasCopiedDossier] = useState<boolean>(false);
 
-  const handleSelectPreset = (preset: (typeof DEMO_PRESETS)[0]) => {
+  const handleSelectPreset = (preset: (typeof PRIORITY_TARGETS)[0]) => {
     if (filterClass !== 'all' && filterClass !== preset.cls) {
       setFilterClass('all');
     }
@@ -284,9 +284,9 @@ INTELLIGENCE GATEWAY: SEEMADRISHTI TACTICAL DEFENSE AI v2.0
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-cyan-400" />
-            TACTICAL PLAYBACK / DEMO PRESETS:
+            PRIORITY THREAT TARGETS:
           </span>
-          {DEMO_PRESETS.map((preset) => {
+          {PRIORITY_TARGETS.map((preset) => {
             const isSelected = selectedTrackId === preset.id;
             return (
               <button

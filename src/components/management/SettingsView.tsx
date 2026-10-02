@@ -81,7 +81,7 @@ type SettingsTab = 'security' | 'appearance' | 'account' | 'surveillance' | 'hel
 export const SettingsView: React.FC<SettingsViewProps> = ({
   anomalySensitivity = 78,
   onAnomalySensitivityChange,
-  trajectoryDataset = 'TU Clausthal Pedestrian Trajectory Dataset (ETH/UCY Stream)',
+  trajectoryDataset = 'Standard Tactical Sector Movement Model (Operational Baseline)',
   onTrajectoryDatasetChange,
   showTrajectoryVectors = true,
   onToggleTrajectoryVectors,
@@ -1205,20 +1205,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </h3>
                 <div className="space-y-2 text-xs font-mono">
                   <div className="flex justify-between p-2.5 rounded-xl tactical-glass-card">
-                    <span className="text-slate-300">Node API Gateway:</span>
-                    <span className="text-white font-bold">http://localhost:3000</span>
+                    <span className="text-slate-300">Operational Command Gateway:</span>
+                    <span className="text-white font-bold">Active Primary Core</span>
                   </div>
                   <div className="flex justify-between p-2.5 rounded-xl tactical-glass-card">
-                    <span className="text-slate-300">Python CV Worker (YOLOv11):</span>
-                    <span className="text-cyan-300 font-bold">Internal IPC / Port 8000</span>
+                    <span className="text-slate-300">Autonomous Vision Core:</span>
+                    <span className="text-cyan-300 font-bold">Operational Sensor Cluster</span>
                   </div>
                   <div className="flex justify-between p-2.5 rounded-xl tactical-glass-card">
-                    <span className="text-slate-300">Tactical Ingress Socket:</span>
-                    <span className="text-emerald-300 font-bold">ws://localhost:3000/ws/alerts</span>
+                    <span className="text-slate-300">Tactical Event Socket:</span>
+                    <span className="text-emerald-300 font-bold">Secure Internal Bus</span>
                   </div>
                   <div className="flex justify-between p-2.5 rounded-xl tactical-glass-card">
-                    <span className="text-slate-300">RTSP Video Proxy:</span>
-                    <span className="text-amber-300 font-bold">rtsp://edge-node:8554/live/cam01</span>
+                    <span className="text-slate-300">Video Ingestion Gateway:</span>
+                    <span className="text-amber-300 font-bold">Active Sector Streams</span>
                   </div>
                 </div>
               </div>

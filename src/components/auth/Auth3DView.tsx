@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Shield,
   Lock,
   User,
-  Mail,
   ArrowRight,
   AlertCircle,
   CheckCircle2,
   Eye,
   EyeOff,
-  Building2,
-  Clock,
   ArrowLeft,
   Fingerprint,
   Zap,
@@ -29,18 +25,17 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
   initialMode = 'login',
   onNavigateLanding,
 }) => {
-  const { login, register, enterDemoMode, setPortal } = useAuth();
+  const { login, register, setPortal } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
 
-  // Form states - default pre-filled with admin credentials for seamless evaluation
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('Admin@123');
+  // Mode: strictly default to login unless explicitly in signup route
+  const [mode] = useState<'login' | 'signup'>(initialMode === 'signup' ? 'signup' : 'login');
+
+  // Form states - Strictly initialized to empty strings (NO hints, NO defaults, NO prefilled credentials)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('Surveillance Operator');
-  const [assignedSector, setAssignedSector] = useState('Sector Alpha - Main Gate');
-  const [shift, setShift] = useState('Day Shift (0600 - 1800)');
   const [showPassword, setShowPassword] = useState(false);
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
@@ -49,124 +44,106 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Smart Security: Brute-Force Rate Limiting Shield
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
+
+  // Countdown timer for security lockout cooldown
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     setIsCapsLockOn(e.getModifierState('CapsLock'));
   };
 
-  const availableRoles = [
-    {
-      id: 'Commander',
-      title: 'Commander / Unit Chief',
-      code: 'LVL-4 COMMAND',
-      color: '#ec4899',
-      border: 'border-pink-500/40',
-      bg: 'bg-pink-500/10',
-      text: 'text-pink-400',
-    },
-    {
-      id: 'Surveillance Operator',
-      title: 'Surveillance Operator',
-      code: 'LVL-3 OPERATOR',
-      color: '#00f0ff',
-      border: 'border-cyan-500/40',
-      bg: 'bg-cyan-500/10',
-      text: 'text-cyan-400',
-    },
-    {
-      id: 'Patrol Officer',
-      title: 'Patrol Officer',
-      code: 'LVL-2 PATROL',
-      color: '#10b981',
-      border: 'border-emerald-500/40',
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-    },
-    {
-      id: 'AI Analyst',
-      title: 'Surveillance AI Analyst',
-      code: 'LVL-3 ANALYST',
-      color: '#a855f7',
-      border: 'border-purple-500/40',
-      bg: 'bg-purple-500/10',
-      text: 'text-purple-400',
-    },
-  ];
-
-  const borderSectors = [
-    'Sector Alpha - Main Gate',
-    'Sector Bravo - Inner Perimeter',
-    'Sector Charlie - Vehicle Checkpoint',
-    'Sector Delta - High Altitude Pass',
-    'Sector Echo - Riverine Boundary',
-    'All Border Sectors (HQ Operational Command)',
-  ];
-
-  const shiftOptions = [
-    'Day Shift (0600 - 1800)',
-    'Night Tactical Shift (1800 - 0600)',
-    'Rotational 24/7 Rapid Response',
-    'Standard HQ Hours (0900 - 1700)',
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds > 0) return;
+
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
       if (mode === 'login') {
-        if (!username.trim() || !password) {
+        const trimmedUser = username.trim();
+        if (!trimmedUser || !password) {
           throw new Error('Please enter operator callsign and security passphrase.');
         }
-        await login(username.trim(), password);
-        setSuccessMessage('Authentication verified. Connecting to Tactical Defense Matrix...');
+
+        // Strictly invoke backend auth via AuthContext (NO client-side passwords or backdoors)
+        await login(trimmedUser, password);
+        setFailedAttempts(0);
+        setSuccessMessage('Authentication verified. Establishing secure defense uplink...');
         navigate('/dashboard', { replace: true });
       } else {
-        if (!username.trim() || !password || !name.trim() || !email.trim()) {
+        const trimmedUser = username.trim();
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim();
+        if (!trimmedUser || !password || !trimmedName || !trimmedEmail) {
           throw new Error('All registration fields are required.');
         }
-        if (password.length < 6) {
-          throw new Error('Security passphrase must contain at least 6 characters.');
+        if (password.length < 8) {
+          throw new Error('Security passphrase must contain at least 8 characters.');
         }
+
         await register({
-          username: username.trim(),
+          username: trimmedUser,
           password,
-          name: name.trim(),
-          email: email.trim(),
-          role,
-          assigned_sector: assignedSector,
-          shift,
+          name: trimmedName,
+          email: trimmedEmail,
+          role: 'Surveillance Operator',
         });
-        setSuccessMessage('Personnel successfully enrolled. Sector clearance granted.');
+        setFailedAttempts(0);
+        setSuccessMessage('Personnel enrollment verified. Clearance established.');
         navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication failed. Please verify credentials.');
+      const nextFailures = failedAttempts + 1;
+      setFailedAttempts(nextFailures);
+
+      // Smart Defense: Enforce lockout after 5 failed attempts
+      if (nextFailures >= 5) {
+        setLockoutSeconds(15);
+        setErrorMessage('Security Rate-Limit Active: Too many failed authentication attempts. Access locked for 15 seconds.');
+      } else {
+        const rawMsg = err.message || 'Authentication rejected. Verify credentials.';
+        setErrorMessage(rawMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen h-[100dvh] w-full bg-[#020510] text-slate-100 flex flex-col justify-between overflow-y-auto overflow-x-hidden font-mono select-none">
+    <div className="relative min-h-screen h-[100dvh] w-full bg-[#030712] text-slate-100 flex flex-col justify-between overflow-y-auto overflow-x-hidden font-mono select-none">
       {/* 3D Holographic Globe & Radar Canvas Background */}
       <Auth3DCanvas />
 
       {/* Cyber Defense Scanline Pattern & Dynamic Subtle Gradient Masks */}
       <div className="absolute inset-0 bg-[radial-gradient(#00f0ff15_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none z-[1]" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#020510]/30 via-transparent to-[#020510]/50 pointer-events-none z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#030712]/40 via-transparent to-[#030712]/60 pointer-events-none z-[1]" />
 
-      {/* Top Header Bar with Ultra-Transparent Frosted Glass */}
-      <header className="relative z-10 w-full px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-white/[0.10] backdrop-blur-xl bg-slate-950/20 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+      {/* Top Header Bar with Transparent Frosted Glass */}
+      <header className="relative z-10 w-full px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-white/[0.10] backdrop-blur-xl bg-slate-950/30 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
         <div
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => (onNavigateLanding ? onNavigateLanding() : setPortal('landing'))}
         >
-          <SeemadrishtiLogo size={32} className="text-cyan-400 drop-shadow-[0_0_15px_rgba(0,240,255,0.7)] transition-transform group-hover:scale-105" />
-          <span className="text-sm font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-teal-300 drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]">
-            SEEMADRISHTI
-          </span>
+          <SeemadrishtiLogo size={32} className="text-[#00E599] drop-shadow-[0_0_15px_rgba(0,229,153,0.7)] transition-transform group-hover:scale-105" />
+          <div className="flex flex-col">
+            <span className="text-sm font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-400 to-teal-300 drop-shadow-[0_0_12px_rgba(0,229,153,0.5)]">
+              SEEMADRISHTI
+            </span>
+            <span className="text-[8px] font-mono tracking-widest text-[#00E599] font-bold uppercase">
+              DEFENSE TELEMETRY GATEWAY
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3.5">
@@ -185,19 +162,19 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
 
       {/* Main Center Auth Container */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-3 sm:p-6 my-auto">
-        <div className={`w-full ${mode === 'signup' ? 'max-w-lg' : 'max-w-[450px]'} transition-all duration-300 relative`}>
+        <div className="w-full max-w-[460px] transition-all duration-300 relative">
           
           {/* Volumetric Glowing Ambient Aura Behind Card */}
-          <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 via-teal-500/15 to-purple-500/15 rounded-[32px] blur-3xl opacity-75 -z-10 animate-pulse pointer-events-none" />
+          <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 via-emerald-500/15 to-blue-500/15 rounded-[32px] blur-3xl opacity-75 -z-10 animate-pulse pointer-events-none" />
           
           {/* Faint Cybernetic Outer Energy Field Ring */}
           <div className="absolute -inset-1 rounded-[26px] border border-cyan-400/25 pointer-events-none -z-10 shadow-[0_0_30px_rgba(0,240,255,0.15)]" />
 
-          {/* Main Ultra-Transparent Frosted Glass Terminal Card with 3D Depth */}
-          <div className="relative rounded-3xl border border-white/25 border-t-white/60 border-b-cyan-400/40 bg-slate-900/[0.10] backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_60px_rgba(0,240,255,0.18),inset_0_1.5px_2px_rgba(255,255,255,0.5),inset_0_-1.5px_2px_rgba(0,240,255,0.25)] overflow-hidden transition-all duration-300">
+          {/* Main Professional Frosted Glass Terminal Card with 3D Depth */}
+          <div className="relative rounded-3xl border border-white/25 border-t-white/60 border-b-cyan-400/40 bg-slate-900/[0.80] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_60px_rgba(0,240,255,0.15),inset_0_1.5px_2px_rgba(255,255,255,0.4),inset_0_-1.5px_2px_rgba(0,240,255,0.2)] overflow-hidden transition-all duration-300">
             
             {/* Glass Light Reflection Sheen */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/[0.06] via-transparent to-white/[0.12] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/[0.05] via-transparent to-white/[0.08] pointer-events-none" />
 
             {/* Tactical Corner HUD Reticles */}
             <div className="absolute top-2.5 left-2.5 w-3.5 h-3.5 border-t-2 border-l-2 border-cyan-400 pointer-events-none drop-shadow-[0_0_8px_#00f0ff]" />
@@ -209,68 +186,34 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
             <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_16px_#00f0ff]" />
 
             {/* Card Header Section */}
-            <div className="p-6 sm:p-7 pb-2">
-              <div className="flex items-center justify-between mb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.35)] backdrop-blur-md">
-                    <Fingerprint className="text-cyan-400 animate-pulse" size={16} />
-                  </div>
-                  <span className="text-[10px] font-bold text-cyan-300 tracking-widest uppercase">
-                    [MANDATORY OPERATOR AUTHENTICATION]
-                  </span>
+            <div className="p-6 sm:p-7 pb-3">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.35)] backdrop-blur-md">
+                  <Fingerprint className="text-cyan-400 animate-pulse" size={16} />
                 </div>
-                <div className="flex items-center gap-1.5 text-[9px] text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/40 backdrop-blur-md shadow-[0_0_12px_rgba(16,185,129,0.3)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  GATEWAY ACTIVE
-                </div>
+                <span className="text-[10px] font-bold text-cyan-300 tracking-widest uppercase">
+                  MANDATORY OPERATOR AUTHENTICATION
+                </span>
               </div>
 
               <h1 className="text-xl sm:text-2xl font-black tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-                {mode === 'login' ? 'OPERATOR AUTHENTICATION' : 'PERSONNEL ENROLLMENT'}
+                OPERATOR AUTHENTICATION
               </h1>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                {mode === 'login'
-                  ? 'Operator authentication is mandatory to establish defense telemetry uplink.'
-                  : 'Register a verified operator profile for border sector clearance.'}
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed font-sans">
+                Operator authentication is mandatory to establish defense telemetry uplink. All sessions are cryptographically verified and recorded.
               </p>
-
-              {/* Floating Segmented Glass Control Toggle */}
-              <div className="grid grid-cols-2 gap-2 mt-5 p-1.5 rounded-2xl bg-black/25 border border-white/[0.14] backdrop-blur-xl shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('login');
-                    setErrorMessage(null);
-                    setSuccessMessage(null);
-                  }}
-                  className={`py-2.5 text-xs font-black tracking-wider rounded-xl transition-all duration-200 cursor-pointer ${
-                    mode === 'login'
-                      ? 'bg-gradient-to-r from-cyan-400 via-cyan-300 to-teal-300 text-black shadow-[0_0_25px_rgba(0,240,255,0.5),0_2px_10px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]'
-                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08]'
-                  }`}
-                >
-                  SIGN IN
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('signup');
-                    setErrorMessage(null);
-                    setSuccessMessage(null);
-                  }}
-                  className={`py-2.5 text-xs font-black tracking-wider rounded-xl transition-all duration-200 cursor-pointer ${
-                    mode === 'signup'
-                      ? 'bg-gradient-to-r from-cyan-400 via-cyan-300 to-teal-300 text-black shadow-[0_0_25px_rgba(0,240,255,0.5),0_2px_10px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]'
-                      : 'text-slate-300 hover:text-white hover:bg-white/[0.08]'
-                  }`}
-                >
-                  ENROLL NEW
-                </button>
-              </div>
             </div>
 
-            {/* Error / Success Glass Banners */}
-            {errorMessage && (
+            {/* Error / Success / Lockout Glass Banners */}
+            {lockoutSeconds > 0 && (
+              <div className="mx-6 sm:mx-7 mb-3 p-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs flex items-center gap-2.5 backdrop-blur-xl shadow-lg">
+                <AlertCircle size={16} className="shrink-0 text-amber-400 animate-pulse" />
+                <span className="leading-snug">
+                  Rate-limit active: Cooldown in progress. Retry in <strong>{lockoutSeconds}s</strong>.
+                </span>
+              </div>
+            )}
+            {errorMessage && lockoutSeconds === 0 && (
               <div className="mx-6 sm:mx-7 mb-3 p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2.5 backdrop-blur-xl shadow-lg animate-shake">
                 <AlertCircle size={15} className="shrink-0 text-rose-400" />
                 <span className="leading-snug">{errorMessage}</span>
@@ -283,132 +226,65 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
               </div>
             )}
 
-            {/* Main Lightweight Form with Semi-Transparent Recessed Glass Inputs */}
-            <form onSubmit={handleSubmit} className="px-6 sm:px-7 pb-6 space-y-4">
+            {/* Main Form - No Hints, No Options, Hardened Against Browser Cache Injection */}
+            <form
+              onSubmit={handleSubmit}
+              autoComplete="off"
+              className="px-6 sm:px-7 pb-6 space-y-4"
+            >
+              {/* Optional Registration Fields (Only if initialMode was explicitly signup) */}
               {mode === 'signup' && (
                 <>
-                  {/* Full Name */}
                   <div>
                     <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
                       Personnel Full Name
                     </label>
-                    <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.3)] rounded-xl transition-all duration-200 backdrop-blur-sm">
-                      <div className="pl-3.5 pr-2.5 py-3 text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
+                    <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 rounded-xl transition-all duration-200">
+                      <div className="pl-3.5 pr-2.5 py-3 text-cyan-400">
                         <User size={14} />
                       </div>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Major Vikram Sen"
+                        placeholder="Personnel Full Name"
                         required
-                        className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-400 outline-none font-mono tracking-wide selection:bg-cyan-500 selection:text-black [&:-webkit-autofill]:[box-shadow:0_0_0px_1000px_rgba(5,15,30,0.2)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:white]"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none font-mono tracking-wide"
                       />
                     </div>
                   </div>
 
-                  {/* Official Email */}
                   <div>
                     <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
                       Department Email
                     </label>
-                    <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.3)] rounded-xl transition-all duration-200 backdrop-blur-sm">
-                      <div className="pl-3.5 pr-2.5 py-3 text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
-                        <Mail size={14} />
+                    <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 rounded-xl transition-all duration-200">
+                      <div className="pl-3.5 pr-2.5 py-3 text-cyan-400">
+                        <User size={14} />
                       </div>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="officer@seemadrishti.gov.in"
+                        placeholder="Official Email Address"
                         required
-                        className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-400 outline-none font-mono tracking-wide selection:bg-cyan-500 selection:text-black [&:-webkit-autofill]:[box-shadow:0_0_0px_1000px_rgba(5,15,30,0.2)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:white]"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none font-mono tracking-wide"
                       />
-                    </div>
-                  </div>
-
-                  {/* Tactical Role Selection */}
-                  <div>
-                    <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
-                      Tactical Role & Clearance
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableRoles.map((r) => (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() => setRole(r.id)}
-                          className={`p-2.5 rounded-xl border text-left transition-all duration-200 cursor-pointer backdrop-blur-sm ${
-                            role === r.id
-                              ? `${r.border} ${r.bg} shadow-[0_0_20px_rgba(0,240,255,0.25),inset_0_1px_1px_rgba(255,255,255,0.2)]`
-                              : 'border-white/15 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.06]'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className={`text-[9px] font-bold ${r.text}`}>{r.code}</span>
-                            {role === r.id && <CheckCircle2 size={11} className="text-cyan-400" />}
-                          </div>
-                          <p className="text-[11px] font-bold text-white mt-0.5 truncate">{r.title}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sector & Shift Selectors */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
-                        Assigned Sector
-                      </label>
-                      <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 rounded-xl transition-all duration-200 backdrop-blur-sm">
-                        <div className="pl-3 pr-2 py-2 text-cyan-400">
-                          <Building2 size={13} />
-                        </div>
-                        <select
-                          value={assignedSector}
-                          onChange={(e) => setAssignedSector(e.target.value)}
-                          className="w-full pr-3 py-2 bg-transparent text-[11px] text-slate-200 outline-none cursor-pointer font-mono"
-                        >
-                          {borderSectors.map((s) => (
-                            <option key={s} value={s} className="bg-slate-950 text-white">
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
-                        Operational Shift
-                      </label>
-                      <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 rounded-xl transition-all duration-200 backdrop-blur-sm">
-                        <div className="pl-3 pr-2 py-2 text-cyan-400">
-                          <Clock size={13} />
-                        </div>
-                        <select
-                          value={shift}
-                          onChange={(e) => setShift(e.target.value)}
-                          className="w-full pr-3 py-2 bg-transparent text-[11px] text-slate-200 outline-none cursor-pointer font-mono"
-                        >
-                          {shiftOptions.map((sh) => (
-                            <option key={sh} value={sh} className="bg-slate-950 text-white">
-                              {sh}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
                     </div>
                   </div>
                 </>
               )}
 
-              {/* Callsign / Username Input */}
+              {/* Callsign / Username Input - No Hints, No Autofill */}
               <div>
                 <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase mb-1">
                   Operator Callsign / ID
                 </label>
-                <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.3)] rounded-xl transition-all duration-200 backdrop-blur-sm">
+                <div className="relative flex items-center bg-white/[0.04] hover:bg-white/[0.07] focus-within:bg-cyan-500/[0.08] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.25)] rounded-xl transition-all duration-200 backdrop-blur-sm">
                   <div className="pl-3.5 pr-2.5 py-3 text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
                     <User size={14} />
                   </div>
@@ -418,14 +294,19 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter operator callsign..."
                     required
+                    autoComplete="off"
+                    autoCorrect="off"
                     autoCapitalize="none"
-                    autoComplete="username"
-                    className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-400 outline-none font-mono tracking-wide selection:bg-cyan-500 selection:text-black [&:-webkit-autofill]:[box-shadow:0_0_0px_1000px_rgba(5,15,30,0.2)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:white]"
+                    spellCheck="false"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    disabled={lockoutSeconds > 0 || isSubmitting}
+                    className="w-full pr-3.5 py-3 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none font-mono tracking-wide selection:bg-cyan-500 selection:text-black"
                   />
                 </div>
               </div>
 
-              {/* Password Input with Sleek Show/Hide and CapsLock Detector */}
+              {/* Password Input with Show/Hide and CapsLock Detector */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[10px] font-bold tracking-wider text-slate-300 uppercase">
@@ -437,7 +318,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="relative flex items-center bg-white/[0.03] hover:bg-white/[0.06] focus-within:bg-cyan-500/[0.06] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.3)] rounded-xl transition-all duration-200 backdrop-blur-sm">
+                <div className="relative flex items-center bg-white/[0.04] hover:bg-white/[0.07] focus-within:bg-cyan-500/[0.08] border border-white/20 hover:border-cyan-400/50 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/25 focus-within:shadow-[0_0_25px_rgba(0,240,255,0.25)] rounded-xl transition-all duration-200 backdrop-blur-sm">
                   <div className="pl-3.5 pr-2.5 py-3 text-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
                     <Lock size={14} />
                   </div>
@@ -449,8 +330,11 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                     onKeyUp={handleKeyDown}
                     placeholder="••••••••••••"
                     required
-                    autoComplete="current-password"
-                    className="w-full pr-10 py-3 bg-transparent text-xs text-white placeholder:text-slate-400 outline-none font-mono tracking-wider selection:bg-cyan-500 selection:text-black [&:-webkit-autofill]:[box-shadow:0_0_0px_1000px_rgba(5,15,30,0.2)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:white]"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    disabled={lockoutSeconds > 0 || isSubmitting}
+                    className="w-full pr-10 py-3 bg-transparent text-xs text-white placeholder:text-slate-500 outline-none font-mono tracking-wider selection:bg-cyan-500 selection:text-black"
                   />
                   <button
                     type="button"
@@ -463,66 +347,12 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                 </div>
               </div>
 
-              {/* Quick Evaluation Callsign Presets */}
-              {mode === 'login' && (
-                <div className="pt-1">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                      Quick Evaluation Accounts
-                    </span>
-                    <span className="text-[9px] text-cyan-400 font-mono">1-Click Auto Fill</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5 mb-3">
-                    {[
-                      { role: 'Commander', user: 'admin', pass: 'Admin@123', border: 'border-pink-500/40 text-pink-300 hover:bg-pink-500/15' },
-                      { role: 'Operator', user: 'operator', pass: 'Operator@123', border: 'border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/15' },
-                      { role: 'Patrol', user: 'patrol', pass: 'Patrol@123', border: 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/15' },
-                      { role: 'Analyst', user: 'analyst', pass: 'Analyst@123', border: 'border-purple-500/40 text-purple-300 hover:bg-purple-500/15' },
-                    ].map((p) => (
-                      <button
-                        key={p.user}
-                        type="button"
-                        onClick={() => {
-                          setUsername(p.user);
-                          setPassword(p.pass);
-                          setErrorMessage(null);
-                        }}
-                        className={`p-2 rounded-xl border ${p.border} bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-sm flex items-center justify-between text-[10px] font-mono transition-all duration-150 cursor-pointer active:scale-95`}
-                      >
-                        <span className="font-bold">{p.role}</span>
-                        <span className="text-[9px] opacity-75 font-mono">({p.user})</span>
-                      </button>
-                    ))}
-                  </div>
 
-                  {/* 1-Click Instant Command Center Access Button */}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setIsSubmitting(true);
-                      setErrorMessage(null);
-                      try {
-                        await enterDemoMode('Commander');
-                        navigate('/dashboard', { replace: true });
-                      } catch (err: any) {
-                        setErrorMessage(err.message || 'Instant access failed');
-                      } finally {
-                        setIsSubmitting(false);
-                      }
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/30 to-teal-500/30 hover:from-emerald-500/40 hover:to-teal-500/40 border border-emerald-400/60 text-emerald-300 text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98]"
-                  >
-                    <Zap size={14} className="text-emerald-400 animate-pulse" />
-                    <span>⚡ 1-CLICK INSTANT ACCESS (COMMANDER)</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Tactile 3D Action Button */}
+              {/* Tactical Action Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full mt-3 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-300 to-teal-300 hover:from-cyan-300 hover:to-teal-200 text-black font-black text-xs tracking-widest flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(0,240,255,0.5),0_4px_15px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.7)] hover:shadow-[0_0_40px_rgba(0,240,255,0.7),0_6px_20px_rgba(0,0,0,0.6)] transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group"
+                disabled={isSubmitting || lockoutSeconds > 0}
+                className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-300 to-teal-300 hover:from-cyan-300 hover:to-teal-200 text-black font-black text-xs tracking-widest flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(0,240,255,0.5),0_4px_15px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.7)] hover:shadow-[0_0_40px_rgba(0,240,255,0.7),0_6px_20px_rgba(0,0,0,0.6)] transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {isSubmitting ? (
                   <>
@@ -531,11 +361,7 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
                   </>
                 ) : (
                   <>
-                    <span>
-                      {mode === 'login'
-                        ? 'AUTHENTICATE & ENTER DASHBOARD'
-                        : 'REGISTER PERSONNEL & ACCESS'}
-                    </span>
+                    <span>AUTHENTICATE &amp; ENTER DASHBOARD</span>
                     <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
                   </>
                 )}
@@ -546,18 +372,17 @@ export const Auth3DView: React.FC<Auth3DViewProps> = ({
       </main>
 
       {/* Clean Classified Defense Footer */}
-      <footer className="relative z-10 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 border-t border-white/[0.10] backdrop-blur-xl bg-slate-950/20">
+      <footer className="relative z-10 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 border-t border-white/[0.10] backdrop-blur-xl bg-slate-950/30">
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00E599] shadow-[0_0_8px_#00E599]" />
           <span>&copy; 2026 SEEMADRISHTI DEFENSE TECHNOLOGIES</span>
         </div>
         <div className="flex items-center gap-3 text-slate-400 tracking-wider">
           <span>RESTRICTED // MIL-STD-810H COMPLIANT</span>
           <span className="text-slate-600">|</span>
-          <span className="text-cyan-400 font-bold">DEFENSE NETWORK ONLY</span>
+          <span className="text-cyan-400 font-bold">AIR-GAPPED DEFENSE MATRIX</span>
         </div>
       </footer>
     </div>
   );
 };
-

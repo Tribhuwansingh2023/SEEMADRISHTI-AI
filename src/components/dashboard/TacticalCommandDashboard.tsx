@@ -1084,7 +1084,7 @@ export const TacticalCommandDashboard: React.FC<TacticalCommandDashboardProps> =
           {/* Hardware & Model Specs Metadata Footer */}
           <div className="pt-2 border-t border-slate-800/60 text-[10px] text-slate-400 font-mono flex items-center justify-between flex-wrap gap-1 px-1">
             <div>
-              Model: <span className="text-cyan-400 font-bold">YOLOv8s</span>
+              Engine: <span className="text-cyan-400 font-bold">AUTONOMOUS VISION</span>
             </div>
             <span className="text-slate-600">|</span>
             <div>
@@ -1092,11 +1092,11 @@ export const TacticalCommandDashboard: React.FC<TacticalCommandDashboardProps> =
             </div>
             <span className="text-slate-600">|</span>
             <div>
-              Device: <span className="text-emerald-400 font-bold">GPU (CUDA)</span>
+              Processing: <span className="text-emerald-400 font-bold">ACCELERATED EDGE</span>
             </div>
             <span className="text-slate-600">|</span>
             <div>
-              Tracker: <span className="text-cyan-400 font-bold">ByteTrack</span>
+              Tracking: <span className="text-cyan-400 font-bold">SPATIAL PREDICTOR</span>
             </div>
           </div>
         </div>

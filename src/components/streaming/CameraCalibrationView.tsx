@@ -94,7 +94,7 @@ export const CameraCalibrationView: React.FC = () => {
       setZones(defaults);
       setSelectedZoneId(defaults[0].id);
     } catch {
-      setErrorMessage('Failed to connect to backend zones API');
+      setErrorMessage('Failed to connect to perimeter zone service');
     }
   }, []);
 
@@ -215,7 +215,7 @@ export const CameraCalibrationView: React.FC = () => {
               CAMERA CALIBRATION & INTRUSION ZONE CONFIGURATOR
             </h2>
             <p className="text-[11px] text-slate-400">
-              INTERACTIVE OPERATOR TOOL // PERSISTS TO config/camera_zones.json
+              INTERACTIVE PERIMETER CALIBRATION // REAL-TIME SECTOR GEOFENCING
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ export const CameraCalibrationView: React.FC = () => {
       {saveSuccess && (
         <div className="p-3 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
           <CheckCircle size={15} className="text-emerald-400" />
-          <span>Calibrated geometry successfully persisted to SQLite and synced to config/camera_zones.json!</span>
+          <span>Calibrated geometry successfully persisted to secure operational database!</span>
         </div>
       )}
 

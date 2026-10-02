@@ -310,7 +310,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
 
             {/* Corner brackets & watermark */}
             <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold z-20">
-              {camera.src?.includes('.mp4') ? 'SOURCE: MP4 (DEMO INPUT)' : 'SOURCE: RTSP (CCTV)'}
+              {camera.src?.includes('.mp4') ? 'SOURCE: MP4 (LOCAL ARCHIVE)' : 'SOURCE: RTSP (CCTV)'}
             </div>
             <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/80 text-white border border-white/20 text-[10px] flex items-center gap-1.5 z-20">
               {isNight ? (
@@ -378,7 +378,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                   [ SOURCE HEALTH ]
                 </span>
                 <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40">
-                  {camera.src?.includes('.mp4') || camera.src?.includes('/video') || camera.src?.includes('/api/cameras/') ? 'MP4 PLAYBACK' : 'RTSP LIVE'}
+                  {camera.src?.includes('.mp4') || camera.src?.includes('/video') || camera.src?.includes('/api/cameras/') ? 'TACTICAL ARCHIVE' : 'DIRECT SENSOR FEED'}
                 </span>
               </div>
               <div className="space-y-1.5 text-[10px] text-slate-300">
@@ -387,9 +387,9 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                   <span className="font-bold text-white">{camera.tag || camera.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">SOURCE URI:</span>
-                  <span className="font-bold text-slate-300 truncate max-w-[140px]" title={camera.src}>
-                    {camera.src ? (camera.src.length > 24 ? `...${camera.src.slice(-20)}` : camera.src) : 'N/A'}
+                  <span className="text-slate-500">SENSOR CHANNEL:</span>
+                  <span className="font-bold text-slate-300 truncate max-w-[140px]">
+                    SECURE-CH-{(camera.tag || camera.id).toUpperCase()}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -441,15 +441,15 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-1.5">
                 <span className="text-[10px] font-black text-emerald-400 uppercase flex items-center gap-1.5">
                   <Layers size={12} />
-                  [ CV HEALTH ]
+                  [ VISION HEALTH ]
                 </span>
                 <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
-                  YOLOv8 + BYTETRACK
+                  AUTONOMOUS AI CORE
                 </span>
               </div>
               <div className="space-y-1.5 text-[10px] text-slate-300">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">CV LATENCY:</span>
+                  <span className="text-slate-500">PROCESSING LATENCY:</span>
                   <span className="font-bold text-cyan-300">14.2 ms</span>
                 </div>
                 <div className="flex justify-between">

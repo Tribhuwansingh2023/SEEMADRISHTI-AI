@@ -44,7 +44,7 @@ import {
 } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { audioAlertEngine } from '../../utils/audioAlert';
-import { ThreatDemoButton } from '../demo/ThreatDemoButton';
+
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
 import { Swarm3DTopology } from './Swarm3DTopology';
 
@@ -68,7 +68,7 @@ export const CLIENT_PRESET_PARALLEL_JOBS: Record<string, ParallelOrchestrationJo
         agentName: 'Sentinel Vision',
         role: 'Perception & Triage',
         color: '#00f0ff',
-        taskTitle: 'Parallel 9-Channel YOLOv8 & Thermal FLIR Multi-Stream Scan',
+        taskTitle: 'Parallel 9-Channel Neural Vision & Thermal FLIR Multi-Stream Scan',
         details: 'Evaluated 9 active RTSP streams simultaneously. Processed 540 frames in parallel batch.',
         status: 'COMPLETED',
         progressPercent: 100,
@@ -1004,8 +1004,7 @@ export const MultiAgentOrchestratorView: React.FC = () => {
         })}
       </div>
 
-      {/* 2b. SIH DEMO: Autonomous Threat Simulation Engine */}
-      <ThreatDemoButton />
+
 
       {/* 3. Main Navigation Subtabs: Workload Distribution vs Deliberation Chamber vs Copilot */}
       <div className="flex items-center gap-2 border-b border-slate-800 pb-3 flex-wrap">
@@ -1105,7 +1104,7 @@ export const MultiAgentOrchestratorView: React.FC = () => {
                 {
                   key: 'perimeter_sweep_9cam',
                   title: '9-Sector Perimeter Sweep',
-                  desc: 'Parallel 9-cam YOLOv8 inference + Homography blindspot scan + QRT proximity check',
+                  desc: 'Parallel 9-cam Neural Vision inference + Homography blindspot scan + QRT proximity check',
                 },
                 {
                   key: 'suspect_reid_multicam',

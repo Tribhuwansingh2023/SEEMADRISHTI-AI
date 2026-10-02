@@ -720,7 +720,7 @@ export const MatrixCameraCell: React.FC<MatrixCameraCellProps> = ({
       resolution: camera.resolution || '4K UHD',
       fps: camera.fps || 60,
       bitrate: camera.bitrate || '8.2 Mbps',
-      aiModels: camera.aiModels || ['YOLOv11-Border'],
+      aiModels: camera.aiModels || ['Tactical-Vision-AI'],
       activeDetections: camera.activeDetections || 2,
       dangerZones: [],
     });
@@ -1466,7 +1466,7 @@ export const MatrixCameraCell: React.FC<MatrixCameraCellProps> = ({
               w: Math.max(bw, 20),
               h: Math.max(bh, 20),
               color: color,
-              subLabel: `REAL YOLO [${Math.round(det.confidence * 100)}%]`,
+              subLabel: `AI VERIFIED [${Math.round(det.confidence * 100)}%]`,
             });
           });
         }
@@ -2286,14 +2286,14 @@ export const MatrixCameraCell: React.FC<MatrixCameraCellProps> = ({
                 }`}></span>
                 <span>
                   {webcamCvStatus === 'ONLINE'
-                    ? `● WEBCAM (LIVE YOLOv8 + ByteTrack)${webcamTelemetry?.fps ? ` // ${webcamTelemetry.fps} FPS` : ''}`
+                    ? `● WEBCAM (LIVE AI SURVEILLANCE)${webcamTelemetry?.fps ? ` // ${webcamTelemetry.fps} FPS` : ''}`
                     : webcamCvStatus === 'OFFLINE'
-                    ? '● WEBCAM — CV PROCESSOR OFFLINE'
+                    ? '● WEBCAM — SENSOR INGESTION OFFLINE'
                     : webcamCvStatus === 'DISCONNECTED'
                     ? '● WEBCAM — CAMERA DISCONNECTED'
                     : webcamCvStatus === 'BACKEND_OFFLINE'
-                    ? '● WEBCAM — BACKEND OFFLINE'
-                    : '● WEBCAM — CONNECTING TO CV...'}
+                    ? '● WEBCAM — SENSOR LINK OFFLINE'
+                    : '● WEBCAM — CONNECTING TO SENSOR...'}
                 </span>
               </div>
             ) : useCvStream || camera.src?.includes('/stream') ? (

@@ -117,4 +117,7 @@ evidence/*.mp4
 !evidence/INC-000002.mp4
 !evidence/INC-000003.mp4
 !evidence/.gitkeep
+evidence/snapshots/*
+!evidence/snapshots/.gitkeep
 scratch/
+

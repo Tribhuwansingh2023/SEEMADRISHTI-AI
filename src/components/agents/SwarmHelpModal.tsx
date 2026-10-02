@@ -231,7 +231,7 @@ export const SwarmHelpModal: React.FC<SwarmHelpModalProps> = ({
                     {
                       key: 'perimeter_sweep_9cam',
                       title: '9-Sector Perimeter Sweep',
-                      desc: 'Parallel 9-cam YOLOv8 + Homography + QRT readiness',
+                      desc: 'Parallel 9-cam Neural Vision + Homography + QRT readiness',
                     },
                     {
                       key: 'suspect_reid_multicam',

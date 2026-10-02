@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       category: 'INTELLIGENCE',
       items: [
-        { id: 'detections' as ViewMode, label: 'AI Detections', icon: ScanEye, code: '[YOLOv8]' },
+        { id: 'detections' as ViewMode, label: 'AI Detections', icon: ScanEye, code: '[VISION]' },
         { id: 'target-journey' as ViewMode, label: 'Target Tracking', icon: Footprints, badge: 'MULTI-CAM', code: '[JOURNEY]' },
         { id: 'inspector' as ViewMode, label: 'Incident Detection', icon: ShieldAlert, badge: 'CRITICAL', isAlert: true, code: '[FORENSIC]' },
         { id: 'analytics' as ViewMode, label: 'Analytics Engine', icon: BarChart3, badge: '24H AI', code: '[TELEMETRY]' },
@@ -110,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'alerts' as ViewMode, label: 'Threat Alerts', icon: TriangleAlert, alertBadge: unreadAlertsCount, isAlert: true, code: '[DEFCON]' },
         { id: 'mission-control' as ViewMode, label: 'Mission Control', icon: Activity, badge: 'OPERATIONAL', isHealth: true, code: '[HQ_CMD]' },
-        { id: 'evidence-queue' as ViewMode, label: 'Evidence Vault', icon: Film, isRecTab: true, badge: 'SHA-256', code: '[FORENSIC_REC]' },
+        { id: 'evidence-queue' as ViewMode, label: 'Evidence Vault', icon: Film, isRecTab: true, badge: 'VAULT', code: '[FORENSIC_REC]' },
         { id: 'system-timeline' as ViewMode, label: 'Operator Timeline', icon: Layers, code: '[AUDIT_LOG]' },
         { id: 'agents' as ViewMode, label: 'Autonomous Swarm', icon: Bot, badge: '5 AGENTS', isAlert: true, code: '[AI_SWARM]' },
         { id: 'notification-history' as ViewMode, label: 'Notification History', icon: BellRing, code: '[AUDIO_LOG]' },
@@ -319,20 +319,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
-        {/* Defense Motivation Banner: PROTECTING WHAT MATTERS */}
-        <div className="shrink-0 flex-none px-3 pt-2 pb-1 select-none">
-          <div className="rounded-xl overflow-hidden border border-slate-800/80 bg-[#050b14] relative group shadow-md">
-            <img
-              src="/assets/soldier_silhouette.png"
-              alt="Protecting What Matters"
-              className="w-full h-28 object-cover object-center opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050b14] via-[#050b14]/50 to-transparent flex items-end justify-center pb-2 px-2">
-              <span className="text-[10px] font-black tracking-widest text-slate-200 uppercase font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
-                PROTECTING WHAT MATTERS
-              </span>
-            </div>
+        {/* National Defense Mission Badge: Built for a Safer Nation */}
+        <div className="shrink-0 flex-none px-3 py-2.5 flex items-center justify-center gap-2 border-t border-slate-800/80 bg-[#03060c]/90 select-none">
+          <div className="flex items-center gap-0.5">
+            <span className="w-2.5 h-1.5 bg-[#FF9933] rounded-xs shadow-[0_0_4px_rgba(255,153,51,0.7)]" />
+            <span className="w-2.5 h-1.5 bg-[#FFFFFF] rounded-xs shadow-[0_0_4px_rgba(255,255,255,0.7)]" />
+            <span className="w-2.5 h-1.5 bg-[#128807] rounded-xs shadow-[0_0_4px_rgba(18,136,7,0.7)]" />
           </div>
+          <span className="text-[11px] font-mono font-bold tracking-wide text-slate-300">
+            Built for a Safer Nation
+          </span>
         </div>
 
         {/* 3. Bottom Operator & Hardware Section (Fixed Bottom, Never Scrolls, Never Overlaps) */}
@@ -362,7 +358,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => {
                 logout(() => {
                   resetLock();
-                  navigate('/login', { replace: true });
+                  navigate('/', { replace: true });
                 });
               }}
               title="Logout"
