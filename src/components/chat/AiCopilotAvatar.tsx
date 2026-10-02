@@ -18,11 +18,11 @@ export const AiCopilotAvatar: React.FC<AiCopilotAvatarProps> = ({
   onClick,
 }) => {
   const sizeMap = {
-    xs: { outer: 'w-6 h-6', imgScale: 'scale-[1.35]', border: 'border', ringSize: 'w-8 h-8' },
-    sm: { outer: 'w-8 h-8', imgScale: 'scale-[1.35]', border: 'border-[1.5px]', ringSize: 'w-10 h-10' },
-    md: { outer: 'w-10 h-10', imgScale: 'scale-[1.35]', border: 'border-2', ringSize: 'w-12 h-12' },
-    lg: { outer: 'w-12 h-12', imgScale: 'scale-[1.35]', border: 'border-2', ringSize: 'w-14 h-14' },
-    xl: { outer: 'w-16 h-16', imgScale: 'scale-[1.35]', border: 'border-2', ringSize: 'w-20 h-20' },
+    xs: { outer: 'w-6 h-6', border: 'border', ringSize: 'w-7 h-7' },
+    sm: { outer: 'w-8 h-8', border: 'border-[1.5px]', ringSize: 'w-9 h-9' },
+    md: { outer: 'w-10 h-10', border: 'border-2', ringSize: 'w-12 h-12' },
+    lg: { outer: 'w-13 h-13', border: 'border-2', ringSize: 'w-15 h-15' },
+    xl: { outer: 'w-18 h-18', border: 'border-2', ringSize: 'w-21 h-21' },
   };
 
   const currentSize = sizeMap[size];
@@ -96,14 +96,13 @@ export const AiCopilotAvatar: React.FC<AiCopilotAvatarProps> = ({
         <div
           className={`relative ${currentSize.outer} rounded-full overflow-hidden bg-[#030712] ${currentSize.border} ${curr.border} ${curr.glow} transition-all duration-300 flex items-center justify-center`}
         >
-          {/* Circular Bot Avatar (Cropped with precision on the robot head from user upload) */}
+          {/* Circular Bot Avatar (Clean text-free cropped character centered) */}
           <img
-            src="/ai_copilot_logo.jpg"
+            src="/ai_copilot_avatar.png"
             alt="SEEMADRISHTI AI COPILOT"
-            className={`w-full h-full object-cover object-[50%_26%] ${currentSize.imgScale} transition-transform duration-300`}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => {
-              // Graceful fallback to tactical SVG icon if image fails to load
-              (e.currentTarget as HTMLElement).style.display = 'none';
+              (e.currentTarget as HTMLImageElement).src = '/ai_copilot_logo.jpg';
             }}
           />
         </div>

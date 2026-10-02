@@ -202,7 +202,7 @@ export function HelpBotWidget() {
   ];
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+    <div className="fixed bottom-8 right-6 sm:bottom-9 sm:right-8 z-50 flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -404,45 +404,22 @@ export function HelpBotWidget() {
         )}
       </AnimatePresence>
 
-      {/* Small Futuristic Round AI-Bot Floating Launcher */}
-      <div className="flex items-center gap-2">
-        {!isOpen && (
-          <div
-            onClick={() => setIsOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#040816]/95 border border-cyan-500/40 text-[10px] font-mono font-bold tracking-wider text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.25)] backdrop-blur-xl cursor-pointer hover:scale-105 active:scale-95 transition-all group"
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                copilotState === 'degraded'
-                  ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'
-                  : copilotState === 'limited_data'
-                  ? 'bg-amber-400 shadow-[0_0_6px_#f59e0b]'
-                  : 'bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse'
-              }`}
-            />
-            <span>AI COPILOT</span>
-            <span className="text-[8px] text-slate-400 font-semibold group-hover:text-cyan-300">
-              {statusTelemetry.camerasOnline}/{statusTelemetry.camerasTotal} CAMS
-            </span>
+      {/* Round AI-Bot Floating Launcher - Only Logo */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`relative rounded-full p-0.5 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer shadow-[0_0_25px_rgba(0,240,255,0.45)] hover:shadow-[0_0_40px_rgba(0,240,255,0.75)] ${
+          isOpen ? 'rotate-90' : ''
+        }`}
+        title="SEEMADRISHTI AI COPILOT"
+      >
+        {isOpen ? (
+          <div className="w-13 h-13 rounded-full bg-[#030712] border-2 border-rose-500/80 text-rose-400 flex items-center justify-center shadow-lg">
+            <X className="w-5 h-5" />
           </div>
+        ) : (
+          <AiCopilotAvatar state={copilotState} size="lg" />
         )}
-
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`relative rounded-full p-0.5 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-[0_0_25px_rgba(0,240,255,0.45)] hover:shadow-[0_0_35px_rgba(0,240,255,0.7)] ${
-            isOpen ? 'rotate-90' : ''
-          }`}
-          title="SEEMADRISHTI AI COPILOT — Surveillance Operations Assistant"
-        >
-          {isOpen ? (
-            <div className="w-12 h-12 rounded-full bg-[#030712] border-2 border-rose-500/80 text-rose-400 flex items-center justify-center shadow-lg">
-              <X className="w-5 h-5" />
-            </div>
-          ) : (
-            <AiCopilotAvatar state={copilotState} size="lg" />
-          )}
-        </button>
-      </div>
+      </button>
     </div>
   );
 }
