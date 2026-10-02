@@ -150,8 +150,12 @@ export const Header: React.FC<HeaderProps> = ({
             >
               SEEMADRISHTI
             </h1>
-            <p className="text-[8px] font-mono tracking-widest text-emerald-400 font-bold uppercase mt-1">
-              DEFENSE | SURVEILLANCE | SECURITY
+            <p className="text-[8px] font-mono tracking-[0.16em] text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)] font-bold uppercase mt-1 leading-none flex items-center gap-1.5">
+              <span>DEFENSE</span>
+              <span className="text-cyan-500/60 font-normal">|</span>
+              <span>SURVEILLANCE</span>
+              <span className="text-cyan-500/60 font-normal">|</span>
+              <span>SECURITY</span>
             </p>
           </div>
 

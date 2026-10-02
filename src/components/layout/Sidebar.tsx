@@ -161,25 +161,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 : 'bg-[#040812]/80 border-cyan-500/20'
             }`}
           >
-            <div
-              className={`w-9 h-9 flex items-center justify-center rounded-lg shrink-0 ${
-                isDaylight
-                  ? 'bg-cyan-900/10 border border-cyan-700/30 shadow-xs'
-                  : 'bg-cyan-950/60 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-              }`}
-            >
-              <SeemadrishtiLogo size={26} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1
-                  className={`text-sm font-black tracking-widest font-mono ${
-                    isDaylight ? 'text-slate-900' : 'text-white'
-                  }`}
-                >
-                  SEEMADRISHTI
-                </h1>
-              </div>
+            <SeemadrishtiLogo
+              size={32}
+              className="shrink-0 drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-transform hover:scale-105"
+            />
+            <div className="flex flex-col justify-center min-w-0">
+              <h1
+                className={`text-sm sm:text-base font-black tracking-wider uppercase font-mono leading-none ${
+                  isDaylight
+                    ? 'text-slate-900'
+                    : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]'
+                }`}
+              >
+                SEEMADRISHTI
+              </h1>
+              <p
+                className={`text-[8px] font-mono tracking-[0.16em] font-bold uppercase mt-1 leading-none flex items-center gap-1.5 ${
+                  isDaylight
+                    ? 'text-cyan-700'
+                    : 'text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.4)]'
+                }`}
+              >
+                <span>DEFENSE</span>
+                <span className="text-cyan-500/60 font-normal">|</span>
+                <span>SURVEILLANCE</span>
+                <span className="text-cyan-500/60 font-normal">|</span>
+                <span>SECURITY</span>
+              </p>
             </div>
           </div>
 
