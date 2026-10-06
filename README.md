@@ -288,7 +288,6 @@ cd SEEMADRISHTI
 # Install frontend and server dependencies
 npm install
 ```
-
 ### 2. Launch the Defense Command Center
 ```bash
 # Starts Express Edge Gateway, WebSocket Server, Python CV processor, and Vite UI
@@ -304,7 +303,6 @@ npm run lint
 # Run all backend test suites (Database, Auth, Cryptography, WebSocket, AI)
 npm run test:backend
 ```
-
 ### 4. (Optional) Run Python Edge Computer Vision Directly
 ```bash
 # Install Python dependencies
@@ -316,7 +314,6 @@ python cv_service/tools/verify_all_ai.py
 # Launch standalone camera detection service
 python cv_service/main.py --source 0 --camera-id cam-01
 ```
-
 ## 🛡️ License & Acknowledgements
 
 Developed for **Smart India Hackathon (SIH26187)** under the **Ministry of Home Affairs**.
