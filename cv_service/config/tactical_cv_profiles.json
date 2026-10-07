@@ -1,0 +1,49 @@
+{
+  "profiles": {
+    "TACTICAL_DEFAULT": {
+      "confidence_threshold": 0.30,
+      "iou_threshold": 0.45,
+      "clahe_clip_limit": 2.0,
+      "clahe_grid_size": [8, 8],
+      "gaussian_blur_kernel": 3,
+      "tracker_buffer": 30,
+      "description": "Standard optical daylight surveillance profile with balanced recall and precision"
+    },
+    "NIGHT_IR": {
+      "confidence_threshold": 0.22,
+      "iou_threshold": 0.40,
+      "clahe_clip_limit": 3.5,
+      "clahe_grid_size": [16, 16],
+      "gaussian_blur_kernel": 5,
+      "tracker_buffer": 45,
+      "description": "Thermal IR and low-lux night mode with aggressive adaptive histogram equalization"
+    },
+    "DENSE_FOG": {
+      "confidence_threshold": 0.25,
+      "iou_threshold": 0.35,
+      "clahe_clip_limit": 4.0,
+      "clahe_grid_size": [12, 12],
+      "gaussian_blur_kernel": 3,
+      "tracker_buffer": 50,
+      "description": "Heavy fog and riverine marsh atmospheric dehazing mode"
+    },
+    "HIGH_SUNGLARE": {
+      "confidence_threshold": 0.35,
+      "iou_threshold": 0.50,
+      "clahe_clip_limit": 1.5,
+      "clahe_grid_size": [8, 8],
+      "gaussian_blur_kernel": 3,
+      "tracker_buffer": 30,
+      "description": "Direct desert sun and asphalt glare suppression mode"
+    },
+    "PRECIPITATION_RAIN": {
+      "confidence_threshold": 0.28,
+      "iou_threshold": 0.40,
+      "clahe_clip_limit": 2.5,
+      "clahe_grid_size": [8, 8],
+      "gaussian_blur_kernel": 5,
+      "tracker_buffer": 40,
+      "description": "Rain droplet streak filtering and temporal frame stabilization"
+    }
+  }
+}
