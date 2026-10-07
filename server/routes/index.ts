@@ -20,3 +20,4 @@ export * from './webcam';
 export * from './sensors';
 export * from './evidence';
 export * from './cctv';
+export * from './health';

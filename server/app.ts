@@ -24,6 +24,7 @@ import {
   sensorsRouter,
   evidenceRouter,
   cctvRouter,
+  healthRouter,
 } from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requireAuth } from './middleware/auth';
@@ -105,6 +106,7 @@ export function createApp(): express.Application {
     // - CCTV preview stream feeds for HTML5 <video> elements: /cameras/:id/video
     const isPublic =
       normPath === '/health' ||
+      normPath.startsWith('/health') ||
       normPath === '/auth/login' ||
       normPath === '/auth/register' ||
       normPath === '/auth/roles' ||
@@ -147,6 +149,7 @@ export function createApp(): express.Application {
   app.use('/api/webcam', webcamRouter);
   app.use('/api/sensors', sensorsRouter);
   app.use('/api/cctv', cctvRouter);
+  app.use('/api/health', healthRouter);
 
   // V1 Alias Sub-Routers
   app.use('/api/v1/intelligence/search', searchRouter);
@@ -167,6 +170,7 @@ export function createApp(): express.Application {
   app.use('/api/v1/webcam', webcamRouter);
   app.use('/api/v1/sensors', sensorsRouter);
   app.use('/api/v1/cctv', cctvRouter);
+  app.use('/api/v1/health', healthRouter);
 
   // 404 for unhandled API routes only
   app.use('/api', notFoundHandler);
