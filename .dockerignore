@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.github
+.vscode
+*.log
+*.sqlite*
+tests
+data/backups
+data/uploads/*
+!data/uploads/.gitkeep
+cv_service/__pycache__
+cv_service/*/__pycache__
+cv_service/tests
+.env
+.env.local
+scratch
