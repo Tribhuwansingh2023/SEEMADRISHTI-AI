@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  seemadrishti-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: seemadrishti-ai:latest
+    container_name: seemadrishti-tactical-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "8088:8088"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CV_PORT=8088
+      - DATABASE_PATH=/app/data/seemadrishti.sqlite
+      - EVIDENCE_STORAGE_DIR=/app/evidence
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      - seemadrishti-data:/app/data
+      - seemadrishti-evidence:/app/evidence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  seemadrishti-data:
+    driver: local
+  seemadrishti-evidence:
+    driver: local
