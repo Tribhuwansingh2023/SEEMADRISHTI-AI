@@ -17,7 +17,7 @@ export function backupDatabase(targetBackupDir?: string): { success: boolean; ba
 
   // Ensure DB connection is initialized
   const db = getDatabase();
-  const integrity = db.pragma('integrity_check') as Array<{ integrity_check: string }>;
+  const integrity = db.prepare('PRAGMA integrity_check').all() as Array<{ integrity_check: string }>;
   const isHealthy = integrity.length > 0 && integrity[0].integrity_check === 'ok';
 
   if (!isHealthy) {
@@ -28,8 +28,9 @@ export function backupDatabase(targetBackupDir?: string): { success: boolean; ba
   const backupFilename = `seemadrishti-backup-${timestamp}.sqlite`;
   const backupPath = path.join(backupDir, backupFilename);
 
-  // Use SQLite vacuum into or filesystem copy
-  db.backup(backupPath);
+  // Use SQLite VACUUM INTO for safe, atomic transactional backup
+  const normalizedPath = backupPath.replace(/\\/g, '/');
+  db.exec(`VACUUM INTO '${normalizedPath}'`);
 
   const stats = fs.statSync(backupPath);
   console.log(`[Backup] SQLite database safely backed up to ${backupPath} (${stats.size} bytes)`);
