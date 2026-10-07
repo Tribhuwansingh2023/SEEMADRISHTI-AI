@@ -7,6 +7,7 @@ import http from 'http';
 import { createApp } from '../server/app';
 import { initializeSchema } from '../server/db/schema';
 import { seedDemoData } from '../server/db/seed';
+import { closeDatabase } from '../server/db/database';
 
 const PORT = 8021;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -100,10 +101,12 @@ async function runHealthTests() {
     console.log(`\n===============================================================`);
     console.log(` RESULTS: 6/6 HEALTH TESTS PASSED`);
     console.log(`===============================================================\n`);
-    process.exit(0);
   } finally {
-    server.close();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    closeDatabase();
   }
+  await new Promise((r) => setTimeout(r, 200));
+  process.exit(0);
 }
 
 runHealthTests().catch((err) => {

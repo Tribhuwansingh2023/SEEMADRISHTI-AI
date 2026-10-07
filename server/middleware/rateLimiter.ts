@@ -25,25 +25,20 @@ export function createRateLimiter(options: RateLimiterOptions = {}) {
 
   const ipStore = new Map<string, RateLimitRecord>();
 
-  // Cleanup expired windows every 2 minutes
-  const cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [ip, record] of ipStore.entries()) {
-      if (now > record.resetTime) {
-        ipStore.delete(ip);
-      }
-    }
-  }, 2 * 60 * 1000);
-
-  // Unref to avoid blocking process exit
-  if (cleanupInterval.unref) {
-    cleanupInterval.unref();
-  }
-
   return (req: Request, res: Response, next: NextFunction) => {
     // Check if rate limiting is explicitly disabled
     if (process.env.DISABLE_RATE_LIMIT === 'true') {
       return next();
+    }
+
+    const now = Date.now();
+    // Opportunistic lazy cleanup for memory bounds
+    if (ipStore.size > 2000) {
+      for (const [ip, rec] of ipStore.entries()) {
+        if (now > rec.resetTime) {
+          ipStore.delete(ip);
+        }
+      }
     }
 
     const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
@@ -54,7 +49,6 @@ export function createRateLimiter(options: RateLimiterOptions = {}) {
       return next();
     }
 
-    const now = Date.now();
     let record = ipStore.get(clientIp);
 
     if (!record || now > record.resetTime) {
