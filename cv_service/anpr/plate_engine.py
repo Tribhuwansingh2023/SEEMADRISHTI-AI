@@ -41,7 +41,7 @@ INDIAN_PLATE_REGEX = re.compile(
 BH_SERIES_REGEX = re.compile(r"^[0-9]{2}BH[0-9]{4}[A-Z]{1,2}$")
 
 # Indian Defense / Armed Forces plate pattern (e.g. ^21D123456K, 22A098765B)
-DEFENSE_PLATE_REGEX = re.compile(r"^(\^|[0-9]{2}[A-Z])[0-9]{5,7}[A-Z]?$")
+DEFENSE_PLATE_REGEX = re.compile(r"^(\^?[0-9]{2}[A-Z][0-9]{5,7}[A-Z]?)$")
 
 # Permissive plate pattern for partially visible or variant plates
 PERMISSIVE_PLATE_REGEX = re.compile(
@@ -185,11 +185,23 @@ class NumberPlateEngine:
         if not raw_text:
             return "", 0.0
 
+        stripped = raw_text.strip().upper()
+        if DEFENSE_PLATE_REGEX.match(stripped):
+            return stripped, 0.96
+
         # Remove non-alphanumeric characters and uppercase
         cleaned = re.sub(r"[^A-Za-z0-9]", "", raw_text).upper().strip()
 
         if len(cleaned) < 5 or len(cleaned) > 12:
             return cleaned, 0.30
+
+        # Fast path if already valid Bharat Series or Defense
+        if BH_SERIES_REGEX.match(cleaned):
+            return cleaned, 0.95
+
+        if INDIAN_PLATE_REGEX.match(cleaned):
+            state = cleaned[:2]
+            return cleaned, 0.95 if state in INDIAN_STATE_CODES else 0.85
 
         # Syntax-guided character disambiguation for standard Indian plates:
         # Format: [AA] [00] [AA] [0000]
