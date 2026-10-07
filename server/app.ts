@@ -59,22 +59,9 @@ export function createApp(): express.Application {
     next();
   });
 
-  // Health Endpoint as specified:
-  // GET /api/health -> { "status": "ok", "service": "seemadrishti-backend" }
-  app.get('/api/health', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'ok',
-      service: 'seemadrishti-backend',
-    });
-  });
-
-  app.get('/api/v1/health', (req: Request, res: Response) => {
-    res.status(200).json({
-      status: 'HEALTHY',
-      service: 'seemadrishti-backend',
-      version: '4.2.0',
-    });
-  });
+  // Health Endpoints with Subsystem Telemetry & Probes
+  app.use('/api/health', healthRouter);
+  app.use('/api/v1/health', healthRouter);
 
   // Authenticated Evidence Endpoints (Strictly Protected; HTTP 206 Partial Content Range Support)
   app.use('/evidence', evidenceRouter);

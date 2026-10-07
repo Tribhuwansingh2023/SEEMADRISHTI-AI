@@ -11,10 +11,19 @@ export const healthRouter = Router();
 // GET /api/health - Detailed system telemetry and health status
 healthRouter.get('/', (_req: Request, res: Response) => {
   const metrics = getSystemHealthMetrics();
-  const statusCode = metrics.status === 'HEALTHY' ? 200 : 503;
-  res.status(statusCode).json({
-    success: metrics.status === 'HEALTHY',
+  res.status(200).json({
+    status: 'ok',
+    service: 'seemadrishti-backend',
     ...metrics,
+  });
+});
+
+// GET /api/health/diagnostics - Detailed subsystem diagnostics
+healthRouter.get('/diagnostics', (_req: Request, res: Response) => {
+  const metrics = getSystemHealthMetrics();
+  res.status(200).json({
+    status: 'ok',
+    diagnostics: metrics,
   });
 });
 
