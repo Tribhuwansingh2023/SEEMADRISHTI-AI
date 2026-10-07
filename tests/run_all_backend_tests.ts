@@ -20,6 +20,10 @@ const testSuites = [
   { name: 'Webcam Ingestion E2E Test Suite', path: 'tests/webcam_e2e_test.ts' },
   { name: '5 AI Tactical Agents & Autonomous Swarm Suite', path: 'tests/agents_swarm_test.ts' },
   { name: 'CCTV Video Footage & AI Analytics Suite', path: 'tests/cctv_pipeline_test.ts' },
+  { name: 'System Health & Diagnostics Suite', path: 'tests/system_health_test.ts' },
+  { name: 'API Rate Limiter Verification Suite', path: 'tests/rate_limiter_test.ts' },
+  { name: 'Forensic Evidence & SHA-256 Digest Suite', path: 'tests/evidence_export_test.ts' },
+  { name: 'Database Backup & Snapshot Integrity Suite', path: 'tests/db_backup_test.ts' },
 ];
 
 console.log('=============================================================================');
