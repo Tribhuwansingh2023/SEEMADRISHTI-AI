@@ -280,10 +280,10 @@ The platform features 22 dedicated tactical modules accessible from the defense 
 ### 1. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/mukteshwar845/SEEMADRISHTI.git
+git clone https://github.com/Tribhuwansingh2023/SEEMADRISHTI-AI.git
 
 # Navigate to the project root
-cd SEEMADRISHTI
+cd SEEMADRISHTI-AI
 
 # Install frontend and server dependencies
 npm install
@@ -295,29 +295,31 @@ npm run dev
 ```
 Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-### 3. Verify & Run Test Suites
+### 3. Docker Deployment (Single-Command Launch)
+```bash
+docker compose up -d --build
+```
+
+### 4. Verify & Run Test Suites
 ```bash
 # Type check and lint
 npm run lint
 
-# Run all backend test suites (Database, Auth, Cryptography, WebSocket, AI)
+# Run all backend test suites (Database, Auth, Cryptography, WebSocket, AI, System Health)
 npm run test:backend
 ```
-### 4. (Optional) Run Python Edge Computer Vision Directly
-```bash
-# Install Python dependencies
-pip install -r cv_service/requirements.txt
+### 5. Technical Documentation & Architecture
+- [System Architecture Specification](docs/ARCHITECTURE.md)
+- [REST API Reference](docs/API_REFERENCE.md)
+- [Production Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
+- [ANPR Recognition Engine Specification](docs/ANPR_ENGINE_SPEC.md)
+- [5-Agent Swarm Deliberation Protocols](docs/SWARM_AGENT_PROTOCOLS.md)
+- [Forensic Cryptographic Security Audit](docs/SECURITY_AUDIT.md)
 
-# Run comprehensive 8-engine AI self-diagnostic suite
-python cv_service/tools/verify_all_ai.py
-
-# Launch standalone camera detection service
-python cv_service/main.py --source 0 --camera-id cam-01
-```
 ## 🛡️ License & Acknowledgements
 
 Developed for **Smart India Hackathon (SIH26187)** under the **Ministry of Home Affairs**.
 
-* **Repository**: [https://github.com/mukteshwar845/SEEMADRISHTI](https://github.com/mukteshwar845/SEEMADRISHTI)
-* **Lead Maintainer**: [mukteshwar845](https://github.com/mukteshwar845)
+* **Repository**: [https://github.com/Tribhuwansingh2023/SEEMADRISHTI-AI](https://github.com/Tribhuwansingh2023/SEEMADRISHTI-AI)
+* **Lead Maintainer**: [Tribhuwan Singh](https://github.com/Tribhuwansingh2023)
 * **License**: [MIT License](LICENSE)
