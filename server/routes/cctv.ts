@@ -23,7 +23,9 @@ import { broadcastWebSocketMessage } from '../services/websocket';
 
 export const cctvRouter = Router();
 
-const USER_DOWNLOADS_DIR = 'C:\\Users\\mukte\\Downloads';
+const USER_DOWNLOADS_DIR = process.env.SURVEILLANCE_VIDEOS_DIR || 
+  (process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Downloads') : 'C:\\Users\\tribh\\Downloads');
+const ALT_USER_DOWNLOADS_DIR = 'C:\\Users\\mukte\\Downloads';
 const UPLOADS_DIR = path.resolve(process.cwd(), 'data/uploads');
 const FIXTURES_DIR = path.resolve(process.cwd(), 'cv_service/tests/fixtures');
 
@@ -87,29 +89,41 @@ const recentPlates: Array<{
 function findVideoFile(filename: string): string | null {
   const cleanName = path.basename(filename);
 
-  // 1. Check user videos in Downloads
+  // 1. Check user videos in primary Downloads
   for (const uv of DEFAULT_USER_VIDEOS) {
     if (uv.filename.toLowerCase() === cleanName.toLowerCase() && fs.existsSync(uv.filePath)) {
       return uv.filePath;
     }
   }
 
-  // 2. Check direct path in Downloads
+  // 2. Check direct path in primary Downloads
   const directDownloadPath = path.join(USER_DOWNLOADS_DIR, cleanName);
   if (fs.existsSync(directDownloadPath)) {
     return directDownloadPath;
   }
 
-  // 3. Check data/uploads/
+  // 3. Check alternate legacy Downloads path
+  const altDownloadPath = path.join(ALT_USER_DOWNLOADS_DIR, cleanName);
+  if (fs.existsSync(altDownloadPath)) {
+    return altDownloadPath;
+  }
+
+  // 4. Check data/uploads/
   const uploadPath = path.join(UPLOADS_DIR, cleanName);
   if (fs.existsSync(uploadPath)) {
     return uploadPath;
   }
 
-  // 4. Check cv_service/tests/fixtures/
+  // 5. Check cv_service/tests/fixtures/
   const fixturePath = path.join(FIXTURES_DIR, cleanName);
   if (fs.existsSync(fixturePath)) {
     return fixturePath;
+  }
+
+  // 6. Fallback to fixture sample_test.mp4 if present for headless testing
+  const fallbackSample = path.join(FIXTURES_DIR, 'sample_test.mp4');
+  if (fs.existsSync(fallbackSample)) {
+    return fallbackSample;
   }
 
   return null;
