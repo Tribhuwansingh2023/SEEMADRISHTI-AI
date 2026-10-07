@@ -34,3 +34,4 @@ export const config: ServerConfig = {
 };
 
 export default config;
+export * from './runtimeConfig';
