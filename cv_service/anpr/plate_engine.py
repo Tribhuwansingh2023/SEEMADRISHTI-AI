@@ -37,6 +37,12 @@ INDIAN_PLATE_REGEX = re.compile(
     r"^([A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}|[0-9]{2}BH[0-9]{4}[A-Z]{1,2})$"
 )
 
+# Bharat Series (BH) Registration: YY BH #### XX (e.g. 22BH1234AA)
+BH_SERIES_REGEX = re.compile(r"^[0-9]{2}BH[0-9]{4}[A-Z]{1,2}$")
+
+# Indian Defense / Armed Forces plate pattern (e.g. ^21D123456K, 22A098765B)
+DEFENSE_PLATE_REGEX = re.compile(r"^(\^|[0-9]{2}[A-Z])[0-9]{5,7}[A-Z]?$")
+
 # Permissive plate pattern for partially visible or variant plates
 PERMISSIVE_PLATE_REGEX = re.compile(
     r"^[A-Z]{2}[0-9]{1,2}[A-Z0-9]{2,8}$"
@@ -213,6 +219,12 @@ class NumberPlateEngine:
         # Check if state code is valid
         state = candidate_str[:2]
         is_known_state = state in INDIAN_STATE_CODES
+
+        if DEFENSE_PLATE_REGEX.match(candidate_str):
+            return candidate_str, 0.96
+
+        if BH_SERIES_REGEX.match(candidate_str):
+            return candidate_str, 0.95
 
         if INDIAN_PLATE_REGEX.match(candidate_str):
             score = 0.95 if is_known_state else 0.85
