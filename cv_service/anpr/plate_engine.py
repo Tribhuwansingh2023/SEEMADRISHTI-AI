@@ -63,7 +63,7 @@ class NumberPlateEngine:
             return True
 
         try:
-            import easyocr
+            import easyocr  # type: ignore[import-not-found, import-untyped]
             # Note: verbose=False prevents Windows cp1252 progress-bar charmap errors
             self.reader = easyocr.Reader(["en"], gpu=self.use_gpu, verbose=False)
             self._is_initialized = True
