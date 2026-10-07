@@ -11,6 +11,11 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "test:backend": "tsx tests/run_all_backend_tests.ts",
+    "test:health": "tsx tests/system_health_test.ts",
+    "test:ratelimit": "tsx tests/rate_limiter_test.ts",
+    "test:evidence": "tsx tests/evidence_export_test.ts",
+    "test:backup": "tsx tests/db_backup_test.ts",
+    "db:backup": "tsx scripts/backup_db.ts",
     "test": "npm run test:backend"
   },
   "dependencies": {
